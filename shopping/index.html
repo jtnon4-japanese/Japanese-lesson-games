@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🛍️ お店で かいものしよう！</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
+
+  :root {
+    --primary: #2A6496;
+    --accent: #F0A500;
+    --green: #27AE60;
+    --red: #C0392B;
+    --bg: #F4F8FB;
+    --card: #FFFFFF;
+    --brown: #2C3E50;
+    --light: #EAF3FB;
+    --shadow: 0 4px 18px rgba(42,100,150,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Zen Maru Gothic', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    background-image:
+      radial-gradient(circle at 10% 10%, rgba(42,100,150,0.07) 0%, transparent 50%),
+      radial-gradient(circle at 90% 90%, rgba(240,165,0,0.07) 0%, transparent 50%);
+  }
+
+  .wrap { width: 100%; max-width: 680px; }
+
+  /* ── MODE TOGGLE ── */
+  .mode-toggle-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    background: white;
+    border: 2px solid #C8DCF0;
+    border-radius: 50px;
+    padding: 6px 8px;
+  }
+
+  .mode-btn {
+    flex: 1;
+    padding: 9px 14px;
+    border: none;
+    border-radius: 40px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #888;
+    background: transparent;
+  }
+
+  .mode-btn.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(42,100,150,0.3);
+  }
+
+  .mode-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    background: var(--accent);
+    color: white;
+    border-radius: 6px;
+    padding: 1px 5px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  /* ── TITLE ── */
+  .title-screen { text-align: center; padding: 20px 16px 36px; }
+
+  .game-logo {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: var(--primary);
+    line-height: 1.15;
+    margin-bottom: 6px;
+  }
+
+  .game-sub {
+    font-size: 0.95rem;
+    color: var(--brown);
+    opacity: 0.65;
+    margin-bottom: 22px;
+  }
+
+  .title-icon {
+    font-size: 4.5rem;
+    display: block;
+    margin: 10px auto;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+  .shop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 18px 0;
+  }
+
+  .shop-card {
+    background: white;
+    border: 2.5px solid #C8DCF0;
+    border-radius: 18px;
+    padding: 18px 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.18s;
+    box-shadow: 0 3px 0 #C8DCF0;
+  }
+
+  .shop-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 6px 0 rgba(42,100,150,0.25); }
+  .shop-card.selected { border-color: var(--primary); background: var(--light); box-shadow: 0 3px 0 var(--primary); }
+
+  .shop-icon { font-size: 2.3rem; margin-bottom: 7px; }
+  .shop-name { font-size: 0.92rem; font-weight: 700; color: var(--brown); }
+  .shop-desc { font-size: 0.72rem; color: #888; margin-top: 3px; }
+
+  .obj-box {
+    background: #FFFBEA;
+    border: 2px dashed var(--accent);
+    border-radius: 14px;
+    padding: 13px 16px;
+    text-align: left;
+    margin: 14px 0;
+  }
+  .obj-box h3 { color: var(--primary); font-size: 0.83rem; font-weight: 700; margin-bottom: 7px; }
+  .obj-item { font-size: 0.86rem; color: var(--brown); margin: 4px 0; display: flex; gap: 7px; }
+
+  /* beginner tip box */
+  .beginner-box {
+    background: #F0FFF4;
+    border: 2px solid #A9DFBF;
+    border-radius: 14px;
+    padding: 12px 16px;
+    text-align: left;
+    margin: 12px 0;
+    font-size: 0.85rem;
+    color: #1a5c35;
+    line-height: 1.6;
+  }
+  .beginner-box h3 { font-size: 0.83rem; font-weight: 700; margin-bottom: 6px; color: #1a7a45; }
+
+  .start-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 15px 44px;
+    font-size: 1.1rem;
+    font-family: inherit;
+    font-weight: 900;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #1a4a70;
+    transition: all 0.15s;
+    margin-top: 8px;
+  }
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0 #1a4a70; }
+  .start-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #1a4a70; }
+  .start-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* ── HUD ── */
+  .hud {
+    background: var(--primary);
+    border-radius: 14px;
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    margin-bottom: 12px;
+  }
+  .hud-left { font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.8); }
+  .hud-score { font-size: 1rem; font-weight: 900; color: var(--accent); }
+  .hud-lives { font-size: 1.05rem; letter-spacing: 2px; }
+  .prog-bar { height: 5px; background: rgba(255,255,255,0.2); border-radius: 3px; margin-top: 5px; overflow:hidden; width: 110px; }
+  .prog-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.5s; }
+
+  /* ── SCENE ── */
+  .scene-card {
+    background: var(--card);
+    border: 2.5px solid #C8DCF0;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    margin-bottom: 12px;
+  }
+
+  .scene-header {
+    background: var(--primary);
+    padding: 9px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+  }
+
+  .stage-pill {
+    background: rgba(255,255,255,0.18);
+    border-radius: 8px;
+    padding: 2px 9px;
+    font-size: 0.76rem;
+    font-weight: 700;
+  }
+
+  .scene-ttl { font-size: 0.9rem; font-weight: 700; }
+
+  .scene-visual {
+    background: var(--light);
+    padding: 16px;
+    text-align: center;
+    border-bottom: 2px solid #DDE8F5;
+  }
+
+  .scene-chars { display: flex; justify-content: center; gap: 28px; }
+  .char-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .char-emoji { font-size: 2.8rem; }
+  .char-lbl { font-size: 0.7rem; font-weight: 700; color: var(--brown); background: white; padding: 2px 7px; border-radius: 7px; border: 1.5px solid #C8DCF0; }
+
+  .conv-area { padding: 14px 16px 0; }
+
+  .bubble {
+    border-radius: 14px;
+    padding: 11px 14px;
+    margin-bottom: 9px;
+  }
+
+  .bubble-staff    { background: var(--light); border: 1.5px solid #C8DCF0; }
+  .bubble-customer { background: #FFF8E1;      border: 1.5px solid #F5E0A0; }
+
+  .bubble-spk {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 4px;
+  }
+  .bubble-customer .bubble-spk { color: #B07D00; }
+
+  .bubble-txt {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--brown);
+    white-space: pre-line;
+  }
+
+  /* reading line — shown only in beginner mode */
+  .bubble-reading {
+    font-size: 0.78rem;
+    color: #5a7fa8;
+    margin-top: 3px;
+    font-style: italic;
+    display: none;
+  }
+
+  .bubble-hint {
+    font-size: 0.78rem;
+    color: #999;
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  /* english translation row under hint — beginner only */
+  .bubble-en {
+    font-size: 0.78rem;
+    color: #27AE60;
+    margin-top: 2px;
+    display: none;
+  }
+
+  body.beginner-mode .bubble-reading { display: block; }
+  body.beginner-mode .bubble-en      { display: block; }
+
+  /* ── CHOICES ── */
+  .choices-wrap { padding: 0 16px 16px; }
+  .choices-lbl { font-size: 0.8rem; font-weight: 700; color: var(--brown); opacity: 0.55; text-align: center; margin: 9px 0; }
+
+  .choices-grid { display: grid; gap: 8px; }
+
+  .choice-btn {
+    background: white;
+    border: 2px solid #C8DCF0;
+    border-radius: 13px;
+    padding: 11px 14px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--brown);
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: all 0.15s;
+    box-shadow: 0 2px 0 #C8DCF0;
+  }
+
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--primary);
+    background: var(--light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 0 rgba(42,100,150,0.25);
+  }
+
+  .choice-btn.correct { background: #E8F8EF; border-color: var(--green); color: #186d3e; box-shadow: 0 2px 0 #186d3e; }
+  .choice-btn.wrong   { background: #FEE9E7; border-color: var(--red);   color: var(--red);  box-shadow: 0 2px 0 #922b21; }
+
+  .c-letter {
+    background: var(--accent);
+    color: white;
+    font-size: 0.76rem;
+    font-weight: 900;
+    width: 23px; height: 23px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .choice-main { display: flex; flex-direction: column; gap: 2px; }
+  .choice-jp { font-size: 0.95rem; font-weight: 700; }
+
+  /* reading + english under each choice — beginner mode */
+  .choice-reading { font-size: 0.75rem; color: #5a7fa8; font-style: italic; display: none; font-weight: 400; }
+  .choice-en      { font-size: 0.75rem; color: #27AE60; display: none; font-weight: 400; }
+
+  body.beginner-mode .choice-reading { display: block; }
+  body.beginner-mode .choice-en      { display: block; }
+
+  /* ── FEEDBACK ── */
+  .fb-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.38);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  .fb-card {
+    background: white;
+    border-radius: 24px;
+    padding: 28px 32px;
+    text-align: center;
+    max-width: 320px;
+    width: 90%;
+    border: 4px solid;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.25);
+    animation: popIn 0.28s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+
+  @keyframes popIn { 0%{transform:scale(0.5);opacity:0} 100%{transform:scale(1);opacity:1} }
+
+  .fb-card.ok { border-color: var(--green); }
+  .fb-card.ng { border-color: var(--red); }
+
+  .fb-emoji { font-size: 3.2rem; margin-bottom: 7px; }
+  .fb-title { font-size: 1.4rem; font-weight: 900; margin-bottom: 6px; }
+  .fb-card.ok .fb-title { color: var(--green); }
+  .fb-card.ng .fb-title { color: var(--red); }
+  .fb-body  { font-size: 0.88rem; color: var(--brown); line-height: 1.6; margin-bottom: 12px; }
+  .fb-pts   { font-size: 0.95rem; font-weight: 900; color: var(--accent); margin-bottom: 16px; }
+
+  .next-btn {
+    background: var(--brown);
+    color: white;
+    border: none;
+    padding: 10px 32px;
+    font-family: inherit;
+    font-size: 0.92rem;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .next-btn:hover { background: var(--primary); }
+
+  .bonus-bar {
+    background: linear-gradient(135deg, var(--accent), #E67E22);
+    color: white;
+    border-radius: 12px;
+    padding: 9px 14px;
+    text-align: center;
+    font-weight: 900;
+    font-size: 0.88rem;
+    margin-bottom: 11px;
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
+  .hidden { display: none !important; }
+
+  /* ── RESULT ── */
+  .result-screen { display: none; text-align: center; padding: 24px 16px; }
+  .r-trophy { font-size: 4.5rem; animation: float 2s ease-in-out infinite; margin-bottom: 10px; }
+  .r-title  { font-size: 1.7rem; font-weight: 900; color: var(--primary); margin-bottom: 5px; }
+  .r-stars  { font-size: 1.7rem; margin: 7px 0; }
+  .r-score  { font-size: 2.6rem; font-weight: 900; color: var(--accent); margin: 12px 0; }
+
+  .r-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; margin: 16px 0; }
+  .stat-box { background: white; border: 2px solid #C8DCF0; border-radius: 12px; padding: 12px 7px; }
+  .stat-val { font-size: 1.35rem; font-weight: 900; color: var(--primary); }
+  .stat-lbl { font-size: 0.7rem; color: #888; margin-top: 2px; }
+
+  .review-card {
+    background: white;
+    border: 2.5px solid #C8DCF0;
+    border-radius: 16px;
+    padding: 16px;
+    margin: 12px 0;
+    text-align: left;
+  }
+  .review-card h3 { color: var(--primary); font-size: 0.88rem; font-weight: 700; margin-bottom: 10px; text-align: center; }
+  .rv-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px dashed #DDE8F5; font-size: 0.86rem; gap: 8px; flex-wrap: wrap; }
+  .rv-item:last-child { border-bottom: none; }
+  .rv-jp   { font-weight: 700; color: var(--brown); }
+  .rv-rom  { font-size: 0.76rem; color: #5a7fa8; font-style: italic; width: 100%; margin-top: 1px; display: none; }
+  .rv-en   { color: #888; font-size: 0.78rem; }
+
+  body.beginner-mode .rv-rom { display: block; }
+
+  .teacher-card {
+    background: #F0F8FF;
+    border: 2px solid #AED6F1;
+    border-radius: 14px;
+    padding: 16px;
+    margin: 12px 0;
+    text-align: left;
+  }
+  .teacher-card h3 { color: var(--primary); font-size: 0.86rem; font-weight: 700; margin-bottom: 9px; }
+  .t-item { font-size: 0.82rem; color: #2c3e50; line-height: 1.6; margin: 4px 0; }
+
+  .replay-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px 42px;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: 900;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #1a4a70;
+    transition: all 0.15s;
+    margin-top: 8px;
+  }
+  .replay-btn:hover { transform: translateY(-2px); }
+
+  .game-screen { display: none; }
+
+  /* in-game mode pill */
+  .ingame-mode-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    color: white;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .ingame-mode-pill:hover { background: rgba(255,255,255,0.28); }
+
+  /* ── NAV BUTTONS ── */
+  .nav-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: white;
+    border: 2px solid #C8DCF0;
+    border-radius: 10px;
+    padding: 7px 13px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--brown);
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 2px 0 #C8DCF0;
+  }
+
+  .nav-btn:hover { border-color: var(--primary); background: var(--light); transform: translateY(-1px); }
+  .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  /* ── CONFIRM DIALOG ── */
+  .confirm-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.38);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+  }
+
+  .confirm-card {
+    background: white;
+    border-radius: 22px;
+    padding: 28px 30px;
+    text-align: center;
+    max-width: 300px;
+    width: 90%;
+    border: 3px solid #C8DCF0;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.22);
+    animation: popIn 0.22s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+
+  .confirm-emoji { font-size: 2.8rem; margin-bottom: 8px; }
+  .confirm-title { font-size: 1.1rem; font-weight: 900; color: var(--brown); margin-bottom: 6px; }
+  .confirm-body  { font-size: 0.85rem; color: #666; line-height: 1.6; margin-bottom: 20px; }
+
+  .confirm-btns { display: flex; gap: 10px; justify-content: center; }
+
+  .confirm-yes {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .confirm-yes:hover { background: #a93226; }
+
+  .confirm-no {
+    background: white;
+    color: var(--brown);
+    border: 2px solid #C8DCF0;
+    padding: 10px 24px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .confirm-no:hover { border-color: var(--primary); background: var(--light); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- MODE TOGGLE — always visible -->
+  <div class="mode-toggle-bar" id="modeBar">
+    <button class="mode-btn active" id="modeJp" onclick="setMode('jp')">
+      🇯🇵 日本語モード
+    </button>
+    <button class="mode-btn" id="modeBgn" onclick="setMode('bgn')">
+      🔤 初心者モード <span class="mode-badge">読み・英訳</span>
+    </button>
+  </div>
+
+  <!-- TITLE -->
+  <div class="title-screen" id="titleScreen">
+    <div class="game-logo">🛍️ お店で<br>かいものしよう！</div>
+    <div class="game-sub">〜 はじめての ショッピング 日本語 〜</div>
+    <span class="title-icon">🏪</span>
+
+    <div style="font-size:0.88rem;color:var(--brown);margin-bottom:10px;font-weight:700;">どのお店に いきますか？</div>
+
+    <div class="shop-grid">
+      <div class="shop-card" onclick="selectShop(0)" id="shop0">
+        <div class="shop-icon">🍜</div>
+        <div class="shop-name">ラーメン屋</div>
+        <div class="shop-desc">注文・ねだん・あじ</div>
+      </div>
+      <div class="shop-card" onclick="selectShop(1)" id="shop1">
+        <div class="shop-icon">☕</div>
+        <div class="shop-name">カフェ</div>
+        <div class="shop-desc">ドリンク・サイズ・テイクアウト</div>
+      </div>
+      <div class="shop-card" onclick="selectShop(2)" id="shop2">
+        <div class="shop-icon">👗</div>
+        <div class="shop-name">ようふく屋</div>
+        <div class="shop-desc">サイズ・いろ・しちゃく</div>
+      </div>
+      <div class="shop-card" onclick="selectShop(3)" id="shop3">
+        <div class="shop-icon">💊</div>
+        <div class="shop-name">ドラッグストア</div>
+        <div class="shop-desc">ばしょをきく・ていあん</div>
+      </div>
+    </div>
+
+    <div class="obj-box">
+      <h3>📚 このゲームで まなぶこと</h3>
+      <div class="obj-item">🗣️ お店の あいさつ</div>
+      <div class="obj-item">🛒 ちゅうもん・リクエスト（〜をください）</div>
+      <div class="obj-item">❓ しつもん（〜はいくらですか？／〜はありますか？）</div>
+      <div class="obj-item">✅ はい・いいえで こたえる</div>
+      <div class="obj-item">😊 きもちをあらわす（おいしい！など）</div>
+    </div>
+
+    <!-- shown only in beginner mode -->
+    <div class="beginner-box hidden" id="beginnerTip">
+      <h3>🔤 初心者モード（Beginner Mode）について</h3>
+      ・会話にローマ字読みと英語訳が表示されます。<br>
+      ・選択肢にもローマ字と英語がつきます。<br>
+      ・ふくしゅうリストにもローマ字が表示されます。<br>
+      <span style="color:#27AE60;font-weight:700;">Reading (romaji) and English translation are shown.</span>
+    </div>
+
+    <button class="start-btn" id="startBtn" onclick="startGame()" disabled>
+      おみせに はいろう！ 🎮
+    </button>
+  </div>
+
+  <!-- GAME -->
+  <div class="game-screen" id="gameScreen">
+    <div class="hud">
+      <div>
+        <div class="hud-left" id="stageLabel">Stage 1 / 6</div>
+        <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      </div>
+      <button class="ingame-mode-pill" onclick="toggleModeInGame()" id="ingameModePill">🇯🇵 日本語モード</button>
+      <div style="text-align:right">
+        <div class="hud-score">⭐ <span id="scoreDisp">0</span></div>
+        <div class="hud-lives" id="livesDisp">❤️❤️❤️</div>
+      </div>
+    </div>
+
+    <!-- NAV BAR -->
+    <div class="nav-bar">
+      <button class="nav-btn" id="btnBack" onclick="confirmAction('back')">◀ まえの もんだい</button>
+      <button class="nav-btn" onclick="confirmAction('home')" style="margin-left:auto">🏠 ホームへ</button>
+    </div>
+
+    <div id="bonusBar" class="bonus-bar hidden">🌟 ボーナス！ ポイント 2ばい！ 🌟</div>
+
+    <div class="scene-card">
+      <div class="scene-header">
+        <span class="stage-pill" id="stagePill">Stage 1</span>
+        <span class="scene-ttl" id="sceneTtl">はじめまして！</span>
+      </div>
+      <div class="scene-visual">
+        <div class="scene-chars" id="sceneChars"></div>
+      </div>
+      <div class="conv-area" id="convArea"></div>
+      <div class="choices-wrap">
+        <div class="choices-lbl" id="choicesLbl">👇 えらんでください</div>
+        <div class="choices-grid" id="choicesGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-screen" id="resultScreen">
+    <div class="r-trophy" id="rTrophy">🏆</div>
+    <div class="r-title"  id="rTitle">クリア！おめでとう！</div>
+    <div class="r-stars"  id="rStars">⭐⭐⭐</div>
+    <div class="r-score">⭐ <span id="rScore">0</span> ポイント</div>
+    <div class="r-stats">
+      <div class="stat-box"><div class="stat-val" id="sCor">0</div><div class="stat-lbl">せいかい ✅</div></div>
+      <div class="stat-box"><div class="stat-val" id="sWrg">0</div><div class="stat-lbl">まちがい ❌</div></div>
+      <div class="stat-box"><div class="stat-val" id="sCmb">0</div><div class="stat-lbl">コンボ 🔥</div></div>
+    </div>
+    <div class="review-card" id="reviewCard"></div>
+    <div class="review-card">
+      <h3>🎭 おうよう会話 — 練習してみよう！</h3>
+      <div class="rv-item"><span class="rv-jp" id="appConv1"></span></div>
+      <div class="rv-item"><span class="rv-jp" id="appConv2"></span></div>
+      <div class="rv-item"><span class="rv-jp" id="appConv3"></span></div>
+    </div>
+    <div class="teacher-card" id="teacherCard"></div>
+    <button class="replay-btn" onclick="resetGame()">もう一かい あそぶ！ 🎮</button>
+  </div>
+
+  <!-- FEEDBACK -->
+  <div class="fb-overlay" id="fbOverlay">
+    <div class="fb-card" id="fbCard">
+      <div class="fb-emoji" id="fbEmoji">⭕</div>
+      <div class="fb-title" id="fbTitle">せいかい！</div>
+      <div class="fb-body"  id="fbBody">すばらしい！</div>
+      <div class="fb-pts"   id="fbPts">＋100 ポイント！</div>
+      <button class="next-btn" onclick="nextStage()">つぎへ ▶</button>
+    </div>
+  </div>
+
+  <!-- CONFIRM DIALOG -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-card">
+      <div class="confirm-emoji" id="confirmEmoji">🏠</div>
+      <div class="confirm-title" id="confirmTitle">ホームにもどりますか？</div>
+      <div class="confirm-body" id="confirmBody">スコアはリセットされます。</div>
+      <div class="confirm-btns">
+        <button class="confirm-yes" id="confirmYes" onclick="doConfirm()">はい</button>
+        <button class="confirm-no" onclick="closeConfirm()">もどる</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+// ── MODE ──────────────────────────────────────────────
+let currentMode = 'jp'; // 'jp' or 'bgn'
+
+function setMode(m) {
+  currentMode = m;
+  document.body.classList.toggle('beginner-mode', m === 'bgn');
+  document.getElementById('modeJp').classList.toggle('active', m === 'jp');
+  document.getElementById('modeBgn').classList.toggle('active', m === 'bgn');
+  document.getElementById('beginnerTip').classList.toggle('hidden', m === 'jp');
+  document.getElementById('ingameModePill').textContent =
+    m === 'jp' ? '🇯🇵 日本語モード' : '🔤 初心者モード';
+}
+
+function toggleModeInGame() {
+  setMode(currentMode === 'jp' ? 'bgn' : 'jp');
+}
+
+// ── DATA ──────────────────────────────────────────────
+// Each bubble: { who, text, reading, en, hint }
+// Each choice: { jp, reading, en, ok, fb }
+
+const SHOPS = {
+  0: {
+    name: 'ラーメン屋',
+    icon: '🍜',
+    staff:    { icon: '👨‍🍳', name: 'スタッフ' },
+    customer: { icon: '🙋',   name: 'あなた（お客さん）' },
+    review: [
+      { jp: 'いらっしゃいませ',       rom: 'Irasshaimase',                  en: 'Welcome!' },
+      { jp: '〜をひとつください',      rom: '〜 wo hitotsu kudasai',          en: 'One 〜, please.' },
+      { jp: '〜はいくらですか？',      rom: '〜 wa ikura desu ka?',           en: 'How much is 〜?' },
+      { jp: 'おすすめは？',            rom: 'Osusume wa?',                   en: 'What do you recommend?' },
+      { jp: 'からくないですか？',      rom: 'Karakunai desu ka?',             en: 'Is it not spicy?' },
+      { jp: 'ごちそうさまでした',      rom: 'Gochisōsama deshita',           en: 'Thank you for the meal.' },
+    ],
+    appConv: [
+      '🙋「すみません、みそラーメンはからいですか？」',
+      '👨‍🍳「いいえ、からくないです。やさしいあじですよ。」',
+      '🙋「じゃあ、それをひとつください！」',
+    ],
+    teacher: [
+      '✅ ロールプレイ：学習者がお客さん役でスタッフに注文する',
+      '✅「〜はありますか？」→「ありません」の練習',
+      '✅ 数字練習：ねだんをよむ（〜えん）',
+      '📌 目標文法：〜をください／〜はいくらですか／からくないです',
+    ],
+    stages: [
+      {
+        title: 'いらっしゃいませ！', pill: 'Stage 1', bonus: false,
+        conv: [
+          { who:'staff', text:'いらっしゃいませ！\nご注文はおきまりですか？',
+            reading:'Irasshaimase! Go-chūmon wa okimari desu ka?',
+            en:'Welcome! Have you decided on your order?', hint:'' },
+        ],
+        q: 'あなたは なんと こたえますか？',
+        choices: [
+          { jp:'すみません、もう少し まってください。', reading:'Sumimasen, mō sukoshi matte kudasai.', en:'Excuse me, please wait a little longer.', ok:true,  fb:'✨ 上手！「すみません、もう少し まってください」は 自然な いいかたです！' },
+          { jp:'わかりません！',                        reading:'Wakarimasen!',                       en:'I don\'t understand!',                    ok:false, fb:'「わかりません」より「まってください」のほうが ていねいです。' },
+          { jp:'はい、おねがいします！',                reading:'Hai, onegaishimasu!',                en:'Yes, please!',                            ok:false, fb:'メニューをみていないのに「おねがいします」はちょっとへん。まずみましょう！' },
+          { jp:'さようなら。',                          reading:'Sayōnara.',                         en:'Goodbye.',                                ok:false, fb:'まだはいったばかりです！かえるのははやすぎます 😅' },
+        ],
+        pts: 100,
+      },
+      {
+        title: 'ちゅうもんしよう', pill: 'Stage 2', bonus: false,
+        conv: [
+          { who:'staff', text:'ご注文はおきまりですか？',
+            reading:'Go-chūmon wa okimari desu ka?',
+            en:'Have you decided on your order?', hint:'' },
+        ],
+        q: 'みそラーメンを たのみましょう！',
+        choices: [
+          { jp:'みそラーメン！',                            reading:'Miso rāmen!',                              en:'Miso ramen!',                       ok:false, fb:'ことばはあってる！でも「〜を ひとつ ください」でていねいに。' },
+          { jp:'みそラーメンを ひとつ ください。',           reading:'Miso rāmen wo hitotsu kudasai.',            en:'One miso ramen, please.',           ok:true,  fb:'🎉 かんぺき！「〜を ひとつ ください」は 注文のきほんです！' },
+          { jp:'みそラーメンが すきです。',                  reading:'Miso rāmen ga suki desu.',                 en:'I like miso ramen.',                ok:false, fb:'「すきです」は気持ちをいう文。注文は「〜をください」です！' },
+          { jp:'ラーメンはどこですか？',                     reading:'Rāmen wa doko desu ka?',                   en:'Where is the ramen?',               ok:false, fb:'ばしょをきく文になっています。注文するときは「ください」！' },
+        ],
+        pts: 120,
+      },
+      {
+        title: 'ねだんをきこう', pill: 'Stage 3', bonus: false,
+        conv: [
+          { who:'staff', text:'みそラーメンをおひとつですね。\nほかになにかございますか？',
+            reading:'Miso rāmen wo ohitotsu desu ne. Hoka ni nanika gozaimasu ka?',
+            en:'One miso ramen, correct? Anything else?', hint:'' },
+        ],
+        q: 'ねだんをきいてみよう！',
+        choices: [
+          { jp:'みそラーメンはたかいですか？',        reading:'Miso rāmen wa takai desu ka?',        en:'Is miso ramen expensive?',           ok:false, fb:'「たかい？」よりせいかくなねだんをきくほうがいいです！' },
+          { jp:'みそラーメンはいくらですか？',        reading:'Miso rāmen wa ikura desu ka?',        en:'How much is miso ramen?',            ok:true,  fb:'💴 パーフェクト！「〜は いくらですか？」はねだんをきく かんぺきなフレーズ！' },
+          { jp:'おかねはいくらですか？',              reading:'Okane wa ikura desu ka?',             en:'How much is the money?',             ok:false, fb:'ちょっとあいまいです。「みそラーメンはいくらですか？」とはっきりいいましょう。' },
+          { jp:'やすいですか？',                      reading:'Yasui desu ka?',                     en:'Is it cheap?',                       ok:false, fb:'「やすい・たかい」じゃなく、「いくら？」ときくのが ふつうです！' },
+        ],
+        pts: 120,
+      },
+      {
+        title: 'あじをかくにん', pill: 'Stage 4', bonus: false,
+        conv: [
+          { who:'staff', text:'みそラーメンは 850円です。',
+            reading:'Miso rāmen wa happyaku gojū-en desu.',
+            en:'Miso ramen is 850 yen.', hint:'' },
+          { who:'customer', text:'このみそラーメンは からいですか？',
+            reading:'Kono miso rāmen wa karai desu ka?',
+            en:'Is this miso ramen spicy?',
+            hint:'（からいのが にがてなので きいてみよう）' },
+          { who:'staff', text:'いいえ、からくないです。\nやさしい あじですよ！',
+            reading:'Iie, karakunai desu. Yasashii aji desu yo!',
+            en:'No, it\'s not spicy. It has a mild flavor!', hint:'' },
+        ],
+        q: 'スタッフの「いいえ、からくないです」をきいて、あなたは？',
+        choices: [
+          { jp:'じゃあ、それでいいです。',                    reading:'Jā, sore de ii desu.',                       en:'OK, that\'s fine then.',          ok:false, fb:'悪くないですが…「ください」でちゅうもんをかくにんしましょう！' },
+          { jp:'よかった！じゃあ、みそラーメンをください。',   reading:'Yokatta! Jā, miso rāmen wo kudasai.',         en:'Great! Then I\'ll have the miso ramen.',  ok:true,  fb:'🌟 すばらしい！きもちをあらわしてちゅうもんできました！' },
+          { jp:'わかりました。さようなら。',                   reading:'Wakarimashita. Sayōnara.',                   en:'I see. Goodbye.',                 ok:false, fb:'かえらないで！まだたべていません 😄' },
+          { jp:'からくないですか？',                           reading:'Karakunai desu ka?',                         en:'Is it not spicy?',                ok:false, fb:'もうスタッフが「からくないです」といいましたよ！' },
+        ],
+        pts: 150,
+      },
+      {
+        title: '⭐ ボーナス！', pill: '⭐ BONUS', bonus: true,
+        conv: [
+          { who:'staff', text:'おまたせしました！\nみそラーメンです。どうぞ！',
+            reading:'Omatase shimashita! Miso rāmen desu. Dōzo!',
+            en:'Sorry for the wait! Here is your miso ramen. Enjoy!', hint:'' },
+          { who:'customer', text:'（ラーメンをたべています…）\nおいしい〜！',
+            reading:'(Rāmen wo tabete imasu...) Oishī!',
+            en:'(Eating ramen...) Delicious!', hint:'' },
+          { who:'staff', text:'ありがとうございます！\nもう一杯いかがですか？',
+            reading:'Arigatō gozaimasu! Mō ippai ikaga desu ka?',
+            en:'Thank you! Would you like another bowl?',
+            hint:'（もういっぱい = one more bowl）' },
+        ],
+        q: 'もっとたべたい！なんといいますか？',
+        choices: [
+          { jp:'もう一杯、ください！',          reading:'Mō ippai, kudasai!',          en:'One more bowl, please!',      ok:true,  fb:'🎊 ボーナスポイント！「もう一杯ください」はかんぺきです！' },
+          { jp:'もっと！もっと！',              reading:'Motto! Motto!',                en:'More! More!',                 ok:false, fb:'気持ちはわかる！でも「もう一杯ください」のほうがていねいです。' },
+          { jp:'いいえ、けっこうです。',        reading:'Iie, kekkō desu.',             en:'No, I\'m fine, thank you.',   ok:false, fb:'もっとたべたいので「もう一杯ください」！「けっこうです」はことわるときです。' },
+          { jp:'まだありますか？',              reading:'Mada arimasu ka?',             en:'Do you still have some?',     ok:false, fb:'ちょっとあいまいです。「もう一杯ください」のほうがシンプル！' },
+        ],
+        pts: 200,
+      },
+      {
+        title: 'ごちそうさまでした！', pill: 'Stage 6 🏁', bonus: false,
+        conv: [
+          { who:'customer', text:'ごちそうさまでした！\nとてもおいしかったです。',
+            reading:'Gochisōsama deshita! Totemo oishikatta desu.',
+            en:'Thank you for the meal! It was very delicious.', hint:'' },
+          { who:'staff', text:'ありがとうございます！\nまたおこしください。',
+            reading:'Arigatō gozaimasu! Mata okoshi kudasai.',
+            en:'Thank you! Please come again.',
+            hint:'（おこしください = please come again）' },
+        ],
+        q: 'お店をでるとき、なんといいますか？',
+        choices: [
+          { jp:'ごちそうさまでした！',           reading:'Gochisōsama deshita!',         en:'Thank you for the meal!',       ok:true,  fb:'🏆 さいこう！食事のあとは「ごちそうさまでした」が 一番自然です！' },
+          { jp:'ありがとうございました！',        reading:'Arigatō gozaimashita!',        en:'Thank you very much!',          ok:false, fb:'「ありがとうございました」も使えますが、食後は「ごちそうさまでした」のほうが自然です！' },
+          { jp:'バイバイ！',                     reading:'Bai bai!',                     en:'Bye bye!',                      ok:false, fb:'お店では「ごちそうさまでした」がていねいです！' },
+          { jp:'いらっしゃいませ！',             reading:'Irasshaimase!',                en:'Welcome!',                      ok:false, fb:'それはお店の人のことば！あなたは「ごちそうさまでした」です。' },
+        ],
+        pts: 150,
+      },
+    ],
+  },
+
+  1: {
+    name: 'カフェ',
+    icon: '☕',
+    staff:    { icon: '👩‍🍳', name: 'スタッフ' },
+    customer: { icon: '🙋',   name: 'あなた（お客さん）' },
+    review: [
+      { jp: 'いらっしゃいませ',            rom: 'Irasshaimase',                       en: 'Welcome!' },
+      { jp: '〜をひとつください',           rom: '〜 wo hitotsu kudasai',              en: 'One 〜, please.' },
+      { jp: '〜でおねがいします',           rom: '〜 de onegaishimasu',                en: '〜, please. / I\'ll go with 〜.' },
+      { jp: 'テイクアウトですか？',         rom: 'Teiku-auto desu ka?',                en: 'Is it to go?' },
+      { jp: 'ここでのみます',               rom: 'Koko de nomimasu',                   en: 'I\'ll drink it here.' },
+      { jp: 'ごちそうさまでした',           rom: 'Gochisōsama deshita',               en: 'Thank you for the meal.' },
+    ],
+    appConv: [
+      '🙋「すみません、コーヒーをひとつください。」',
+      '👩‍🍳「サイズは どうなさいますか？」',
+      '🙋「Mサイズで おねがいします。」',
+    ],
+    teacher: [
+      '✅ サイズをきく練習：S・M・Lで答えてもらう',
+      '✅「テイクアウトですか？」→「ここで のみます／たべます」',
+      '✅ ロールプレイ：注文→サイズ確認→支払いの流れ',
+      '📌 目標文法：〜をください／〜でおねがいします／ここで〜',
+    ],
+    stages: [
+      {
+        title: 'いらっしゃいませ！', pill: 'Stage 1', bonus: false,
+        conv: [
+          { who:'staff', text:'いらっしゃいませ！\nご注文はいかがですか？',
+            reading:'Irasshaimase! Go-chūmon wa ikaga desu ka?',
+            en:'Welcome! What would you like to order?', hint:'' },
+        ],
+        q: 'カフェラテをたのもう！',
+        choices: [
+          { jp:'カフェラテ！',                     reading:'Kaferate!',                          en:'Café latte!',                   ok:false, fb:'「カフェラテ！」だけはちょっとぶっきらぼう。「〜をください」をつかおう！' },
+          { jp:'カフェラテをひとつください。',      reading:'Kaferate wo hitotsu kudasai.',        en:'One café latte, please.',        ok:true,  fb:'☕ パーフェクト！「〜をひとつください」でていねいな注文ができました！' },
+          { jp:'カフェラテがすきです。',            reading:'Kaferate ga suki desu.',             en:'I like café latte.',             ok:false, fb:'「すきです」は気持ち。注文するときは「ください」！' },
+          { jp:'なにがありますか？',               reading:'Nani ga arimasu ka?',               en:'What do you have?',              ok:false, fb:'メニューをみよう！注文は「〜をください」でOK。' },
+        ],
+        pts: 100,
+      },
+      {
+        title: 'サイズは？', pill: 'Stage 2', bonus: false,
+        conv: [
+          { who:'staff', text:'サイズはどうなさいますか？\nS・M・L ございます。',
+            reading:'Saizu wa dō nasaimasu ka? S, M, L gozaimasu.',
+            en:'What size would you like? We have S, M, and L.',
+            hint:'（どうなさいますか = what would you like?）' },
+        ],
+        q: 'Mサイズをえらぼう！',
+        choices: [
+          { jp:'ふつうのやつ！',               reading:'Futsū no yatsu!',              en:'The regular one!',            ok:false, fb:'「ふつう」でもわかりますが、「Mサイズで おねがいします」のほうがていねいです！' },
+          { jp:'Mサイズでおねがいします。',    reading:'M-saizu de onegaishimasu.',     en:'Medium size, please.',        ok:true,  fb:'🎉 上手！「〜で おねがいします」はサイズや種類をえらぶときのべんりなフレーズ！' },
+          { jp:'おおきいのがいいです。',        reading:'Ōkii no ga ii desu.',           en:'I want the big one.',         ok:false, fb:'気持ちはわかる！でもS・M・Lで「Mサイズでおねがいします」とはっきりいおう。' },
+          { jp:'わかりません。',               reading:'Wakarimasen.',                  en:'I don\'t know.',              ok:false, fb:'S・M・Lの中からえらんで「Mサイズでおねがいします」！' },
+        ],
+        pts: 120,
+      },
+      {
+        title: 'テイクアウト？', pill: 'Stage 3', bonus: false,
+        conv: [
+          { who:'staff', text:'テイクアウトですか？\nそれとも こちらで おめしあがりですか？',
+            reading:'Teiku-auto desu ka? Soretomo kochira de omeshiagari desu ka?',
+            en:'Is it to go? Or will you be dining in?',
+            hint:'（おめしあがり = dining in）' },
+        ],
+        q: 'カフェでのむ！なんといいますか？',
+        choices: [
+          { jp:'ここでのみます。',          reading:'Koko de nomimasu.',          en:'I\'ll drink it here.',      ok:true,  fb:'✨ かんぺき！「ここでのみます／たべます」はシンプルでわかりやすい！' },
+          { jp:'テイクアウトします。',      reading:'Teiku-auto shimasu.',        en:'I\'ll take it to go.',      ok:false, fb:'カフェでのむんですよね？「ここでのみます」です！' },
+          { jp:'どこでもいいです。',        reading:'Doko demo ii desu.',         en:'Anywhere is fine.',         ok:false, fb:'えらんでください！「ここでのみます」か「テイクアウトします」。' },
+          { jp:'うちにかえります。',        reading:'Uchi ni kaerimasu.',         en:'I\'m going home.',          ok:false, fb:'テイクアウトのことは「テイクアウトします」。カフェで飲むなら「ここでのみます」！' },
+        ],
+        pts: 120,
+      },
+      {
+        title: 'ねだんをきこう', pill: 'Stage 4', bonus: false,
+        conv: [
+          { who:'staff', text:'MサイズカフェラテMサイズ、\nこちらでおめしあがりですね。',
+            reading:'M-saizu kaferate, kochira de omeshiagari desu ne.',
+            en:'Medium café latte for here, correct.', hint:'' },
+          { who:'customer', text:'すみません、いくらですか？',
+            reading:'Sumimasen, ikura desu ka?',
+            en:'Excuse me, how much is it?', hint:'' },
+          { who:'staff', text:'カフェラテMサイズは 550円です。',
+            reading:'Kaferate M-saizu wa gohyaku gojū-en desu.',
+            en:'Café latte M size is 550 yen.', hint:'' },
+        ],
+        q: 'カードではらいたい！なんといいますか？',
+        choices: [
+          { jp:'カードでいいですか？',        reading:'Kādo de ii desu ka?',          en:'Is card okay?',            ok:true,  fb:'💳 すごい！「〜でいいですか？」は確認するときのべんりなフレーズ！' },
+          { jp:'カード！',                    reading:'Kādo!',                        en:'Card!',                    ok:false, fb:'みじかすぎ！「カードでいいですか？」とていねいにきこう。' },
+          { jp:'カードがすきです。',          reading:'Kādo ga suki desu.',           en:'I like cards.',            ok:false, fb:'「すきです」は気持ち。「カードでいいですか？」で確認しよう！' },
+          { jp:'げんきんしかありません。',    reading:'Genkin shika arimasen.',       en:'I only have cash.',        ok:false, fb:'げんきんがないからカードできくんです。「カードでいいですか？」！' },
+        ],
+        pts: 150,
+      },
+      {
+        title: '⭐ ボーナス！', pill: '⭐ BONUS', bonus: true,
+        conv: [
+          { who:'staff', text:'はい、カードでだいじょうぶです。\nこちらへどうぞ。',
+            reading:'Hai, kādo de daijōbu desu. Kochira e dōzo.',
+            en:'Yes, card is fine. Please come this way.', hint:'' },
+          { who:'customer', text:'ありがとうございます！',
+            reading:'Arigatō gozaimasu!',
+            en:'Thank you!', hint:'' },
+          { who:'staff', text:'カフェラテです、おまたせしました。\nケーキはいかがですか？',
+            reading:'Kaferate desu, omatase shimashita. Kēki wa ikaga desu ka?',
+            en:'Here\'s your café latte, sorry for the wait. Would you like some cake?',
+            hint:'（いかがですか = Would you like 〜?）' },
+        ],
+        q: 'ケーキもたべたい！なんといいますか？',
+        choices: [
+          { jp:'はい、チーズケーキをひとつください！',  reading:'Hai, chīzukēki wo hitotsu kudasai!',  en:'Yes, one cheesecake please!',    ok:true,  fb:'🎊 ボーナスポイント！「はい、〜をひとつください」でついでに注文できました！' },
+          { jp:'いいえ！',                             reading:'Iie!',                               en:'No!',                            ok:false, fb:'たべたいなら「はい、〜をください」！「いいえ」はことわるとき。' },
+          { jp:'ケーキすき！',                          reading:'Kēki suki!',                         en:'I like cake!',                   ok:false, fb:'注文は「〜をください」です。気持ちだけじゃたのめません！' },
+          { jp:'たかいですか？',                        reading:'Takai desu ka?',                     en:'Is it expensive?',               ok:false, fb:'ねだんがきになるのはわかる！でもまず「ください」でたのもう。' },
+        ],
+        pts: 200,
+      },
+      {
+        title: 'ごちそうさまでした！', pill: 'Stage 6 🏁', bonus: false,
+        conv: [
+          { who:'customer', text:'ごちそうさまでした！\nおいしかったです。',
+            reading:'Gochisōsama deshita! Oishikatta desu.',
+            en:'Thank you for the meal! It was delicious.', hint:'' },
+          { who:'staff', text:'ありがとうございました！\nまたどうぞ。',
+            reading:'Arigatō gozaimashita! Mata dōzo.',
+            en:'Thank you very much! Please come again.', hint:'' },
+        ],
+        q: 'お店をでるとき、なんといいますか？',
+        choices: [
+          { jp:'ごちそうさまでした！',           reading:'Gochisōsama deshita!',         en:'Thank you for the meal!',         ok:true,  fb:'🏆 さいこう！カフェや食事のあとは「ごちそうさまでした」が一番自然です！' },
+          { jp:'ありがとうございました！',        reading:'Arigatō gozaimashita!',        en:'Thank you very much!',            ok:false, fb:'「ありがとうございました」も使えますが、食後は「ごちそうさまでした」のほうが自然です！' },
+          { jp:'バイバイ！',                     reading:'Bai bai!',                     en:'Bye bye!',                        ok:false, fb:'お店では「ごちそうさまでした」がていねいです！' },
+          { jp:'さようなら！',                   reading:'Sayōnara!',                    en:'Goodbye!',                        ok:false, fb:'「さようなら」よりも食後は「ごちそうさまでした」が自然です。' },
+        ],
+        pts: 150,
+      },
+    ],
+  },
+
+  2: {
+    name: 'ようふく屋',
+    icon: '👗',
+    staff:    { icon: '👩‍💼', name: 'スタッフ' },
+    customer: { icon: '🙋',   name: 'あなた（お客さん）' },
+    review: [
+      { jp: 'これをみせてください',          rom: 'Kore wo misete kudasai',             en: 'Please show me this.' },
+      { jp: 'Mサイズはありますか？',         rom: 'M-saizu wa arimasu ka?',             en: 'Do you have size M?' },
+      { jp: 'しちゃくしてもいいですか？',    rom: 'Shichaku shite mo ii desu ka?',      en: 'May I try it on?' },
+      { jp: 'このいろがすきです',            rom: 'Kono iro ga suki desu',              en: 'I like this color.' },
+      { jp: 'これをください',                rom: 'Kore wo kudasai',                    en: 'I\'ll take this one.' },
+      { jp: 'ありがとうございました',        rom: 'Arigatō gozaimashita',              en: 'Thank you.' },
+    ],
+    appConv: [
+      '🙋「すみません、これのMサイズは ありますか？」',
+      '👩‍💼「はい、ございます。どうぞ。」',
+      '🙋「しちゃくしても いいですか？」',
+    ],
+    teacher: [
+      '✅ サイズ確認：〜はありますか？→ はい/いいえ',
+      '✅「〜してもいいですか？」（May I〜）の導入',
+      '✅ いろのことば：あか・あお・しろ・くろ・みどり など',
+      '📌 目標文法：〜はありますか／〜してもいいですか／これをください',
+    ],
+    stages: [
+      {
+        title: 'みせてもらおう', pill: 'Stage 1', bonus: false,
+        conv: [
+          { who:'staff', text:'いらっしゃいませ！\nなにか おさがしですか？',
+            reading:'Irasshaimase! Nanika osagashi desu ka?',
+            en:'Welcome! Are you looking for something?',
+            hint:'（おさがし = looking for）' },
+        ],
+        q: 'あのワンピースをみたい！なんときく？',
+        choices: [
+          { jp:'あのワンピースをみせてください。',    reading:'Ano wanpīsu wo misete kudasai.',      en:'Please show me that dress.',         ok:true,  fb:'👗 かんぺき！「〜をみせてください」はお店でとてもよくつかうフレーズ！' },
+          { jp:'ワンピース！',                       reading:'Wanpīsu!',                           en:'The dress!',                         ok:false, fb:'ことばはあってる！「〜をみせてください」でていねいにきいてみよう。' },
+          { jp:'ワンピースはどこですか？',            reading:'Wanpīsu wa doko desu ka?',           en:'Where is the dress?',                ok:false, fb:'ばしょをきくフレーズ。みたいときは「みせてください」！' },
+          { jp:'ワンピースがすきです。',             reading:'Wanpīsu ga suki desu.',              en:'I like dresses.',                    ok:false, fb:'気持ちはいい！でも「みせてください」でたのもう。' },
+        ],
+        pts: 100,
+      },
+      {
+        title: 'サイズをきこう', pill: 'Stage 2', bonus: false,
+        conv: [
+          { who:'staff', text:'こちらのワンピースはいかがですか？',
+            reading:'Kochira no wanpīsu wa ikaga desu ka?',
+            en:'How about this dress?', hint:'' },
+          { who:'customer', text:'かわいい！でも…',
+            reading:'Kawaii! Demo...',
+            en:'It\'s cute! But...', hint:'' },
+        ],
+        q: 'Mサイズがあるかきこう！',
+        choices: [
+          { jp:'Mサイズはありますか？',          reading:'M-saizu wa arimasu ka?',         en:'Do you have size M?',         ok:true,  fb:'✨ すばらしい！「〜はありますか？」はお店でよくつかう大切な表現です！' },
+          { jp:'おおきいのはありますか？',        reading:'Ōkii no wa arimasu ka?',         en:'Do you have a bigger one?',   ok:false, fb:'いいですが、「Mサイズはありますか？」のほうがはっきりしています。' },
+          { jp:'このサイズしかないですか？',      reading:'Kono saizu shika nai desu ka?',  en:'Is this the only size?',      ok:false, fb:'すこしきつい言い方。「Mサイズはありますか？」とやさしくきこう。' },
+          { jp:'サイズはどれですか？',           reading:'Saizu wa dore desu ka?',         en:'Which size is this?',         ok:false, fb:'「〜はありますか？」でほしいサイズをはっきりきこう！' },
+        ],
+        pts: 120,
+      },
+      {
+        title: 'しちゃくしたい', pill: 'Stage 3', bonus: false,
+        conv: [
+          { who:'staff', text:'Mサイズ、ございます。\nどうぞ。',
+            reading:'M-saizu, gozaimasu. Dōzo.',
+            en:'We have size M. Here you go.', hint:'' },
+        ],
+        q: 'きてみたい！なんという？',
+        choices: [
+          { jp:'しちゃくしてもいいですか？',      reading:'Shichaku shite mo ii desu ka?',    en:'May I try it on?',          ok:true,  fb:'🎉 パーフェクト！「〜してもいいですか？」は許可をもらうときのべんりなフレーズ！' },
+          { jp:'きてみます！',                    reading:'Kite mimasu!',                     en:'I\'ll try it on!',          ok:false, fb:'許可をもらってから！「しちゃくしてもいいですか？」ときこう。' },
+          { jp:'しちゃくしたいです。',            reading:'Shichaku shitai desu.',            en:'I want to try it on.',       ok:false, fb:'いいですが、「してもいいですか？」のほうがていねいにきけます。' },
+          { jp:'これはなんですか？',              reading:'Kore wa nan desu ka?',             en:'What is this?',             ok:false, fb:'ワンピースはわかってる！しちゃくしたいときは「してもいいですか？」。' },
+        ],
+        pts: 120,
+      },
+      {
+        title: 'いろをえらぼう', pill: 'Stage 4', bonus: false,
+        conv: [
+          { who:'staff', text:'このワンピース、あおいろとくろいろがあります。\nどちらがよろしいですか？',
+            reading:'Kono wanpīsu, ao-iro to kuro-iro ga arimasu. Dochira ga yoroshii desu ka?',
+            en:'This dress comes in blue and black. Which would you prefer?',
+            hint:'（どちら = which one）' },
+        ],
+        q: 'あおいろがいい！なんという？',
+        choices: [
+          { jp:'あおいろがいいです。',      reading:'Ao-iro ga ii desu.',        en:'I\'d like the blue one.',      ok:true,  fb:'💙 上手！「〜がいいです」でほしいものをはっきりつたえられました！' },
+          { jp:'あお！',                   reading:'Ao!',                       en:'Blue!',                        ok:false, fb:'「あおいろがいいです」のほうがていねいです！' },
+          { jp:'どちらでもいいです。',     reading:'Dochira demo ii desu.',     en:'Either is fine.',              ok:false, fb:'あおがいいんですよね？「あおいろがいいです」とはっきりいおう！' },
+          { jp:'むずかしいです。',         reading:'Muzukashii desu.',          en:'It\'s difficult.',             ok:false, fb:'えらびましょう！「あおいろがいいです」でOK。' },
+        ],
+        pts: 150,
+      },
+      {
+        title: '⭐ ボーナス！', pill: '⭐ BONUS', bonus: true,
+        conv: [
+          { who:'staff', text:'あおいろのMサイズですね。\n5,800円です。',
+            reading:'Ao-iro no M-saizu desu ne. Gosen happyaku-en desu.',
+            en:'The blue one in size M. It\'s 5,800 yen.', hint:'' },
+          { who:'customer', text:'ちょっとたかいですね…',
+            reading:'Chotto takai desu ne...',
+            en:'It\'s a bit expensive...', hint:'' },
+          { who:'staff', text:'こちらはセールで3,500円のワンピースもございますよ。',
+            reading:'Kochira wa sēru de sanzenhappyaku-en no wanpīsu mo gozaimasu yo.',
+            en:'We also have this dress on sale for 3,500 yen.',
+            hint:'（セール = sale）' },
+        ],
+        q: 'セールのものをみたい！なんという？',
+        choices: [
+          { jp:'それをみせてください！',      reading:'Sore wo misete kudasai!',       en:'Please show me that one!',      ok:true,  fb:'🎊 ボーナスポイント！「それをみせてください」でしっかりたのめました！' },
+          { jp:'やすい！',                   reading:'Yasui!',                        en:'It\'s cheap!',                  ok:false, fb:'やすくてうれしい！でも「みせてください」でたのもう。' },
+          { jp:'セールがすきです。',          reading:'Sēru ga suki desu.',            en:'I like sales.',                 ok:false, fb:'気持ちはわかる！でも「みせてください」でたのもう。' },
+          { jp:'それはなんですか？',          reading:'Sore wa nan desu ka?',          en:'What is that?',                 ok:false, fb:'ワンピースといっていますよ。みたいなら「みせてください」！' },
+        ],
+        pts: 200,
+      },
+      {
+        title: 'かいものかんりょう！', pill: 'Stage 6 🏁', bonus: false,
+        conv: [
+          { who:'customer', text:'このワンピースにします！\nこれをください。',
+            reading:'Kono wanpīsu ni shimasu! Kore wo kudasai.',
+            en:'I\'ll take this dress! I\'ll have this one.', hint:'' },
+          { who:'staff', text:'ありがとうございます。\n3,500円でございます。',
+            reading:'Arigatō gozaimasu. Sanzenhappyaku-en de gozaimasu.',
+            en:'Thank you. That will be 3,500 yen.', hint:'' },
+        ],
+        q: 'かいもの かんりょう！でるとき なんといいますか？',
+        choices: [
+          { jp:'ありがとうございました！',    reading:'Arigatō gozaimashita!',       en:'Thank you very much!',       ok:true,  fb:'🏆 さいこう！ようふく屋では「ありがとうございました」が自然なしめくくりです！' },
+          { jp:'ごちそうさまでした！',        reading:'Gochisōsama deshita!',        en:'Thank you for the meal!',    ok:false, fb:'「ごちそうさまでした」は食事のあとのことば。お店でのかいもので は「ありがとうございました」！' },
+          { jp:'またきます！',               reading:'Mata kimasu!',                 en:'I\'ll come again!',          ok:false, fb:'きもちはいい！でもまず「ありがとうございました」。' },
+          { jp:'やすかったです！',           reading:'Yasukatta desu!',              en:'It was cheap!',              ok:false, fb:'きもちはわかる！でもしめくくりは「ありがとうございました」。' },
+        ],
+        pts: 150,
+      },
+    ],
+  },
+
+  3: {
+    name: 'ドラッグストア',
+    icon: '💊',
+    staff:    { icon: '👨‍⚕️', name: 'スタッフ' },
+    customer: { icon: '🙋',   name: 'あなた（お客さん）' },
+    review: [
+      { jp: 'すみません、〜はどこですか？',    rom: 'Sumimasen, 〜 wa doko desu ka?',      en: 'Excuse me, where is 〜?' },
+      { jp: 'かぜぐすりをさがしています',      rom: 'Kazegusuri wo sagashite imasu',        en: 'I\'m looking for cold medicine.' },
+      { jp: 'これはどうつかいますか？',         rom: 'Kore wa dō tsukaimasu ka?',           en: 'How do I use this?' },
+      { jp: 'いちにちになんかいのみますか？',   rom: 'Ichinichi ni nankai nomimasu ka?',     en: 'How many times a day do I take it?' },
+      { jp: 'これをください',                  rom: 'Kore wo kudasai',                     en: 'I\'ll take this one.' },
+      { jp: 'ありがとうございました',           rom: 'Arigatō gozaimashita',               en: 'Thank you.' },
+    ],
+    appConv: [
+      '🙋「すみません、かぜぐすりはどこですか？」',
+      '👨‍⚕️「あちらです。こちらがおすすめですよ。」',
+      '🙋「いちにちになんかいのみますか？」',
+    ],
+    teacher: [
+      '✅「〜はどこですか？」で場所をきく練習',
+      '✅「〜をさがしています」の導入',
+      '✅ 使い方をきく：どうつかいますか？',
+      '📌 目標文法：〜はどこですか／〜をさがしています／これをください',
+    ],
+    stages: [
+      {
+        title: 'ばしょをきこう', pill: 'Stage 1', bonus: false,
+        conv: [
+          { who:'staff', text:'いらっしゃいませ！',
+            reading:'Irasshaimase!',
+            en:'Welcome!', hint:'' },
+        ],
+        q: 'かぜぐすりはどこ？なんときく？',
+        choices: [
+          { jp:'すみません、かぜぐすりはどこですか？',    reading:'Sumimasen, kazegusuri wa doko desu ka?',   en:'Excuse me, where is the cold medicine?',   ok:true,  fb:'✨ かんぺき！「すみません、〜はどこですか？」はばしょをきくきほんフレーズ！' },
+          { jp:'かぜぐすり！',                           reading:'Kazegusuri!',                             en:'Cold medicine!',                           ok:false, fb:'「すみません、かぜぐすりはどこですか？」でていねいにきこう！' },
+          { jp:'かぜぐすりがほしいです。',               reading:'Kazegusuri ga hoshii desu.',               en:'I want cold medicine.',                    ok:false, fb:'いいですが、ばしょをきくなら「どこですか？」！' },
+          { jp:'くすりをください。',                     reading:'Kusuri wo kudasai.',                       en:'Give me medicine.',                        ok:false, fb:'どこにあるかまだわからないので まず「どこですか？」！' },
+        ],
+        pts: 100,
+      },
+      {
+        title: 'さがしています', pill: 'Stage 2', bonus: false,
+        conv: [
+          { who:'staff', text:'かぜぐすりですね！\nどのようなかぜですか？',
+            reading:'Kazegusuri desu ne! Dono yōna kaze desu ka?',
+            en:'Cold medicine! What kind of cold symptoms do you have?',
+            hint:'（どのような = what kind of）' },
+        ],
+        q: 'のどがいたいとつたえよう',
+        choices: [
+          { jp:'のどぐすりをさがしています。',    reading:'Nodogusuri wo sagashite imasu.',    en:'I\'m looking for throat medicine.',    ok:true,  fb:'🎉 上手！「〜をさがしています」はほしいものをつたえるべんりな表現！' },
+          { jp:'のどがいたい！',                  reading:'Nodo ga itai!',                    en:'My throat hurts!',                    ok:false, fb:'気持ちはわかる！「〜をさがしています」でていねいに。' },
+          { jp:'のどのくすりはありますか？',      reading:'Nodo no kusuri wa arimasu ka?',    en:'Do you have throat medicine?',        ok:false, fb:'いいですが、「さがしています」のほうがより自然です！' },
+          { jp:'びょういんはどこですか？',        reading:'Byōin wa doko desu ka?',           en:'Where is the hospital?',              ok:false, fb:'びょういんじゃなくてくすりをさがしています！「〜をさがしています」を使おう。' },
+        ],
+        pts: 120,
+      },
+      {
+        title: 'つかいかたをきこう', pill: 'Stage 3', bonus: false,
+        conv: [
+          { who:'staff', text:'このくすりがおすすめです。\nのどによくききますよ。',
+            reading:'Kono kusuri ga osusume desu. Nodo ni yoku kikimasu yo.',
+            en:'I recommend this medicine. It works well for throats.',
+            hint:'（きく = to work/be effective）' },
+        ],
+        q: 'つかいかたがわからない！なんときく？',
+        choices: [
+          { jp:'これはどうつかいますか？',     reading:'Kore wa dō tsukaimasu ka?',     en:'How do I use this?',          ok:true,  fb:'💊 パーフェクト！「どうつかいますか？」はつかいかたをきくだいじなフレーズ！' },
+          { jp:'たべますか？',                reading:'Tabemasu ka?',                  en:'Do I eat it?',                ok:false, fb:'くすりは「のみます」！でも「どうつかいますか？」できちんときこう。' },
+          { jp:'これはなんですか？',          reading:'Kore wa nan desu ka?',          en:'What is this?',               ok:false, fb:'くすりとはわかってる！つかいかたをきくなら「どうつかいますか？」。' },
+          { jp:'わかりません。',              reading:'Wakarimasen.',                  en:'I don\'t understand.',        ok:false, fb:'わからないからきくんですね。「どうつかいますか？」！' },
+        ],
+        pts: 120,
+      },
+      {
+        title: 'なんかいのむ？', pill: 'Stage 4', bonus: false,
+        conv: [
+          { who:'staff', text:'1じょうを コップいっぱいのみずでのんでください。',
+            reading:'Ichi-jō wo koppu ippai no mizu de nonde kudasai.',
+            en:'Please take one tablet with a full glass of water.',
+            hint:'（じょう = tablet, コップ = cup）' },
+          { who:'customer', text:'ありがとうございます。\nえっと…',
+            reading:'Arigatō gozaimasu. Etto...',
+            en:'Thank you. Um...', hint:'' },
+        ],
+        q: '1日に なんかいのむかきこう！',
+        choices: [
+          { jp:'いちにちになんかいのみますか？',    reading:'Ichinichi ni nankai nomimasu ka?',    en:'How many times a day do I take it?',    ok:true,  fb:'⭐ すごい！「いちにちになんかい〜しますか？」はくすりのときによくつかいます！' },
+          { jp:'なんかい？',                        reading:'Nankai?',                            en:'How many times?',                       ok:false, fb:'「いちにちになんかいのみますか？」でていねいにきこう！' },
+          { jp:'いつのみますか？',                  reading:'Itsu nomimasu ka?',                  en:'When do I take it?',                    ok:false, fb:'いい質問！でも「なんかい」をきくなら「いちにちになんかいのみますか？」。' },
+          { jp:'たくさんのみますか？',              reading:'Takusan nomimasu ka?',               en:'Do I take a lot?',                      ok:false, fb:'かいすうをきくなら「なんかい」！「たくさん」はかいすうじゃないです。' },
+        ],
+        pts: 150,
+      },
+      {
+        title: '⭐ ボーナス！', pill: '⭐ BONUS', bonus: true,
+        conv: [
+          { who:'staff', text:'1日3かいです。\n1,200円です。',
+            reading:'Ichinichi sankai desu. Sennihyaku-en desu.',
+            en:'Three times a day. It\'s 1,200 yen.', hint:'' },
+          { who:'customer', text:'わかりました！',
+            reading:'Wakarimashita!',
+            en:'I understand!', hint:'' },
+          { who:'staff', text:'ポイントカードはございますか？',
+            reading:'Pointo kādo wa gozaimasu ka?',
+            en:'Do you have a point card?',
+            hint:'（ポイントカード = loyalty card）' },
+        ],
+        q: 'ポイントカードがない！なんという？',
+        choices: [
+          { jp:'いいえ、もっていません。',       reading:'Iie, motte imasen.',          en:'No, I don\'t have one.',     ok:true,  fb:'🎊 ボーナスポイント！「もっていません」はシンプルでただしい答えかた！' },
+          { jp:'ありません！',                   reading:'Arimasen!',                   en:'There isn\'t one!',          ok:false, fb:'ものの場合は「ありません」。じぶんがもっていないときは「もっていません」！' },
+          { jp:'ポイントカード？',               reading:'Pointo kādo?',                en:'Point card?',                ok:false, fb:'きもちはわかる！「いいえ、もっていません」とこたえよう。' },
+          { jp:'はい、あります！',               reading:'Hai, arimasu!',               en:'Yes, I have one!',           ok:false, fb:'もっていないので「いいえ、もっていません」です！' },
+        ],
+        pts: 200,
+      },
+      {
+        title: 'おだいじに！', pill: 'Stage 6 🏁', bonus: false,
+        conv: [
+          { who:'customer', text:'ありがとうございました。',
+            reading:'Arigatō gozaimashita.',
+            en:'Thank you very much.', hint:'' },
+          { who:'staff', text:'ありがとうございます。\nおだいじに！',
+            reading:'Arigatō gozaimasu. Odaiji ni!',
+            en:'Thank you. Please take care of yourself!',
+            hint:'（おだいじに = please take care of yourself）' },
+        ],
+        q: 'スタッフの「おだいじに」になんとこたえる？',
+        choices: [
+          { jp:'ありがとうございます！',      reading:'Arigatō gozaimasu!',       en:'Thank you!',                   ok:true,  fb:'🏆 かんぺき！「ありがとうございます」はいつでもつかえるべんりなことば！' },
+          { jp:'あなたも！',                 reading:'Anata mo!',                en:'You too!',                     ok:false, fb:'「ありがとうございます」がいちばん自然なこたえです！' },
+          { jp:'バイバイ！',                 reading:'Bai bai!',                 en:'Bye bye!',                     ok:false, fb:'お店では「ありがとうございます／ました」がいいです！' },
+          { jp:'おだいじに！',              reading:'Odaiji ni!',               en:'Take care!',                   ok:false, fb:'あなたはびょうきなのでスタッフにいうのはちょっとへん。「ありがとうございます」！' },
+        ],
+        pts: 150,
+      },
+    ],
+  },
+};
+
+// ── STATE ─────────────────────────────────────────────
+let shopId = null, stageIdx = 0, score = 0, lives = 3;
+let correctCount = 0, wrongCount = 0, combo = 0, maxCombo = 0;
+let answered = false;
+
+function selectShop(id) {
+  shopId = id;
+  document.querySelectorAll('.shop-card').forEach((c, i) => {
+    c.classList.toggle('selected', i === id);
+  });
+  document.getElementById('startBtn').disabled = false;
+}
+
+function startGame() {
+  if (shopId === null) return;
+  document.getElementById('titleScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'block';
+  renderStage();
+}
+
+function renderStage() {
+  const shop = SHOPS[shopId];
+  const s = shop.stages[stageIdx];
+  answered = false;
+  const total = shop.stages.length;
+
+  // back button: disabled on first stage
+  document.getElementById('btnBack').disabled = stageIdx === 0;
+
+  document.getElementById('stageLabel').textContent = `Stage ${stageIdx + 1} / ${total}`;
+  document.getElementById('progFill').style.width = `${(stageIdx / total) * 100}%`;
+  document.getElementById('scoreDisp').textContent = score;
+  document.getElementById('livesDisp').textContent = '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, 3 - lives));
+  document.getElementById('bonusBar').classList.toggle('hidden', !s.bonus);
+  document.getElementById('stagePill').textContent = s.pill;
+  document.getElementById('sceneTtl').textContent = s.title;
+
+  document.getElementById('sceneChars').innerHTML = `
+    <div class="char-col"><div class="char-emoji">${shop.staff.icon}</div><div class="char-lbl">${shop.staff.name}</div></div>
+    <div style="font-size:1.8rem;align-self:center">↔️</div>
+    <div class="char-col"><div class="char-emoji">${shop.customer.icon}</div><div class="char-lbl">${shop.customer.name}</div></div>
+  `;
+
+  const convArea = document.getElementById('convArea');
+  convArea.innerHTML = s.conv.map(line => {
+    const isStaff = line.who === 'staff';
+    return `<div class="bubble ${isStaff ? 'bubble-staff' : 'bubble-customer'}">
+      <div class="bubble-spk">${isStaff ? shop.staff.icon + ' ' + shop.staff.name : shop.customer.icon + ' あなた'}</div>
+      <div class="bubble-txt">${line.text}</div>
+      ${line.reading ? `<div class="bubble-reading">${line.reading}</div>` : ''}
+      ${line.en      ? `<div class="bubble-en">${line.en}</div>` : ''}
+      ${line.hint    ? `<div class="bubble-hint">${line.hint}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('choicesLbl').textContent = `👇 ${s.q}`;
+  const letters = ['Ａ','Ｂ','Ｃ','Ｄ'];
+  document.getElementById('choicesGrid').innerHTML = s.choices.map((c, i) =>
+    `<button class="choice-btn" onclick="choose(${i})">
+      <span class="c-letter">${letters[i]}</span>
+      <span class="choice-main">
+        <span class="choice-jp">${c.jp}</span>
+        <span class="choice-reading">${c.reading}</span>
+        <span class="choice-en">${c.en}</span>
+      </span>
+    </button>`
+  ).join('');
+}
+
+function choose(idx) {
+  if (answered) return;
+  answered = true;
+  const s = SHOPS[shopId].stages[stageIdx];
+  const c = s.choices[idx];
+  document.querySelectorAll('.choice-btn').forEach((b, i) => {
+    b.disabled = true;
+    if (s.choices[i].ok) b.classList.add('correct');
+    if (i === idx && !c.ok) b.classList.add('wrong');
+  });
+
+  const fbCard = document.getElementById('fbCard');
+  if (c.ok) {
+    combo++; correctCount++;
+    if (combo > maxCombo) maxCombo = combo;
+    let pts = s.pts * (s.bonus ? 2 : 1);
+    if (combo >= 3) pts = Math.floor(pts * 1.5);
+    score += pts;
+    document.getElementById('fbEmoji').textContent = combo >= 3 ? '🔥' : '⭕';
+    document.getElementById('fbTitle').textContent = combo >= 3 ? `${combo}コンボ！！` : 'せいかい！';
+    document.getElementById('fbBody').textContent = c.fb;
+    document.getElementById('fbPts').textContent = `＋${pts} ポイント！${combo >= 3 ? ' コンボボーナス🎊' : ''}`;
+    fbCard.className = 'fb-card ok';
+  } else {
+    combo = 0; wrongCount++;
+    lives = Math.max(0, lives - 1);
+    document.getElementById('fbEmoji').textContent = '❌';
+    document.getElementById('fbTitle').textContent = 'もう一かい！';
+    document.getElementById('fbBody').textContent = c.fb;
+    document.getElementById('fbPts').textContent = lives > 0 ? `のこり ❤️ ${lives}` : '💔 がんばれ！';
+    fbCard.className = 'fb-card ng';
+  }
+  document.getElementById('fbOverlay').style.display = 'flex';
+}
+
+function nextStage() {
+  document.getElementById('fbOverlay').style.display = 'none';
+  stageIdx++;
+  if (stageIdx >= SHOPS[shopId].stages.length) showResult();
+  else renderStage();
+}
+
+function showResult() {
+  document.getElementById('gameScreen').style.display = 'none';
+  document.getElementById('resultScreen').style.display = 'block';
+  const shop = SHOPS[shopId];
+  const rate = correctCount / shop.stages.length;
+  let trophy='🏆', title='クリア！おめでとう！', stars='⭐⭐⭐';
+  if (rate < 0.5) { trophy='😢'; title='もう一かい ちょうせん！'; stars='⭐'; }
+  else if (rate < 0.8) { trophy='🥈'; title='よくできました！'; stars='⭐⭐'; }
+  document.getElementById('rTrophy').textContent = trophy;
+  document.getElementById('rTitle').textContent = title;
+  document.getElementById('rStars').textContent = stars;
+  document.getElementById('rScore').textContent = score;
+  document.getElementById('sCor').textContent = correctCount;
+  document.getElementById('sWrg').textContent = wrongCount;
+  document.getElementById('sCmb').textContent = maxCombo;
+
+  document.getElementById('reviewCard').innerHTML = `<h3>📝 ふくしゅう ― ${shop.name}のことば</h3>` +
+    shop.review.map(r =>
+      `<div class="rv-item">
+        <div>
+          <span class="rv-jp">${r.jp}</span>
+          <div class="rv-rom">${r.rom}</div>
+        </div>
+        <span class="rv-en">${r.en}</span>
+      </div>`
+    ).join('');
+
+  document.getElementById('appConv1').textContent = shop.appConv[0];
+  document.getElementById('appConv2').textContent = shop.appConv[1];
+  document.getElementById('appConv3').textContent = shop.appConv[2];
+
+  document.getElementById('teacherCard').innerHTML = `<h3>👩‍🏫 せんせい用 進行メモ</h3>` +
+    shop.teacher.map(t => `<div class="t-item">${t}</div>`).join('');
+}
+
+// ── CONFIRM DIALOG ────────────────────────────────────
+let pendingAction = null;
+
+function confirmAction(action) {
+  // close feedback if open
+  document.getElementById('fbOverlay').style.display = 'none';
+
+  pendingAction = action;
+  const overlay = document.getElementById('confirmOverlay');
+  const emoji   = document.getElementById('confirmEmoji');
+  const title   = document.getElementById('confirmTitle');
+  const body    = document.getElementById('confirmBody');
+
+  if (action === 'back') {
+    emoji.textContent = '◀';
+    title.textContent = 'まえの もんだいに もどりますか？';
+    body.textContent  = 'このもんだいのスコアは キャンセルされます。';
+  } else {
+    emoji.textContent = '🏠';
+    title.textContent = 'ホームにもどりますか？';
+    body.textContent  = 'スコアはリセットされます。';
+  }
+  overlay.style.display = 'flex';
+}
+
+function closeConfirm() {
+  document.getElementById('confirmOverlay').style.display = 'none';
+  pendingAction = null;
+}
+
+function doConfirm() {
+  document.getElementById('confirmOverlay').style.display = 'none';
+  if (pendingAction === 'back') goBack();
+  else goHome();
+  pendingAction = null;
+}
+
+function goBack() {
+  if (stageIdx === 0) return;
+  // undo score from current stage if it was already answered correctly
+  // (simplest: just go back, no score rollback — stage replay is enough)
+  stageIdx--;
+  // reset combo to be fair
+  combo = 0;
+  renderStage();
+}
+
+function goHome() {
+  stageIdx=0; score=0; lives=3;
+  correctCount=0; wrongCount=0; combo=0; maxCombo=0;
+  answered=false; shopId=null;
+  document.querySelectorAll('.shop-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('gameScreen').style.display = 'none';
+  document.getElementById('resultScreen').style.display = 'none';
+  document.getElementById('titleScreen').style.display = 'block';
+}
+
+function resetGame() {
+  goHome();
+}
+</script>
+</body>
+</html>
