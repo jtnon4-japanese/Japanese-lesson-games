@@ -1,0 +1,2372 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🛒 スーパーへいこう！</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=M+PLUS+Rounded+1c:wght@700;800&display=swap');
+
+/* ══════════════════════════════════════
+   RESET & ROOT
+══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #E8F4FD;
+  --sky:      #87CEEB;
+  --sun:      #FFD54F;
+  --grass:    #66BB6A;
+  --orange:   #FF6F00;
+  --orange-l: #FF8F00;
+  --orange-d: #E65100;
+  --pink:     #E91E63;
+  --purple:   #7B1FA2;
+  --blue:     #1565C0;
+  --teal:     #00838F;
+  --green:    #2E7D32;
+  --red:      #C62828;
+  --gray:     #546E7A;
+  --white:    #FFFFFF;
+  --card:     #FFFDE7;
+  --lv1c:     #388E3C;
+  --lv2c:     #E65100;
+  --lv3c:     #C62828;
+  --panel-w:  300px;
+  --font:     'M PLUS Rounded 1c', 'Nunito', sans-serif;
+  --radius:   20px;
+  --shadow:   0 4px 20px rgba(0,0,0,0.12);
+  --shadow-l: 0 8px 32px rgba(0,0,0,0.18);
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font);
+  background: var(--bg);
+  /* NO overflow:hidden here — each screen manages its own */
+}
+
+/* ══════════════════════════════════════
+   ANIMATED BACKGROUND
+══════════════════════════════════════ */
+#bg-scene {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden;
+  background: linear-gradient(180deg,
+    #87CEEB 0%, #B8DEF0 32%,
+    #90EE90 32%, #5DBB63 46%,
+    #D2A679 46%, #C4956A 100%);
+}
+.cloud {
+  position: absolute; pointer-events: none;
+  animation: cloudFloat linear infinite;
+}
+@keyframes cloudFloat { from{left:-250px} to{left:110%} }
+.cloud svg { display: block; }
+
+/* ══════════════════════════════════════
+   SCREENS — base
+══════════════════════════════════════ */
+.screen {
+  position: fixed; inset: 0; z-index: 10;
+  display: none;
+  /* each screen sets its own display type via #screen-X.active */
+}
+
+/* ══════════════════════════════════════
+   ① TITLE SCREEN — scrollable page
+══════════════════════════════════════ */
+#screen-title {
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(4px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px 48px;
+}
+#screen-title.active {
+  display: flex;
+}
+
+.title-card {
+  background: white;
+  border-radius: 28px;
+  padding: 36px 36px 32px;
+  max-width: 520px; width: 100%;
+  box-shadow: var(--shadow-l), 0 0 0 5px var(--sun);
+  text-align: center;
+  flex-shrink: 0;
+  /* guarantee it fits — scale down padding on short viewports */
+}
+.title-store {
+  font-size: 4.5rem;
+  animation: storeBounce 2.5s ease-in-out infinite;
+  filter: drop-shadow(3px 5px 6px rgba(0,0,0,0.2));
+}
+@keyframes storeBounce {
+  0%,100%{ transform: translateY(0) scale(1); }
+  50%{ transform: translateY(-12px) scale(1.05); }
+}
+.title-h1  { font-size: 2rem;   font-weight: 900; color: var(--orange); margin: 4px 0 2px; }
+.title-sub { font-size: .95rem; color: #999; font-weight: 700; margin-bottom: 24px; }
+
+.lv-grid { display: flex; gap: 10px; margin-bottom: 22px; }
+.lv-card {
+  flex: 1; border-radius: 16px; padding: 16px 10px;
+  cursor: pointer; border: 4px solid transparent;
+  transition: transform .2s, box-shadow .2s, border-color .2s;
+  background: #f8f8f8; text-align: center;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+.lv-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.14); }
+.lv-card.sel { border-color: currentColor; }
+.lv-card[data-lv="1"]     { color: var(--lv1c); }
+.lv-card[data-lv="2"]     { color: var(--lv2c); }
+.lv-card[data-lv="3"]     { color: var(--lv3c); }
+.lv-card[data-lv="1"].sel { background: #F1F8E9; }
+.lv-card[data-lv="2"].sel { background: #FFF3E0; }
+.lv-card[data-lv="3"].sel { background: #FFEBEE; }
+.lv-icon  { font-size: 2.2rem; margin-bottom: 5px; }
+.lv-name  { font-size: .95rem; font-weight: 900; margin-bottom: 4px; }
+.lv-info  { font-size: .72rem; color: #888; font-weight: 700; line-height: 1.5; }
+.lv-stars { font-size: .85rem; margin-top: 5px; }
+
+.start-btn {
+  width: 100%; padding: 16px;
+  border-radius: 50px; border: none;
+  background: linear-gradient(135deg, var(--orange-l), var(--orange-d));
+  color: white; font-family: var(--font);
+  font-size: 1.15rem; font-weight: 900;
+  cursor: pointer; letter-spacing: 1px;
+  box-shadow: 0 6px 0 #a34200;
+  transition: transform .15s, box-shadow .15s;
+}
+.start-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 9px 0 #a34200; }
+.start-btn:active:not(:disabled){ transform: translateY(2px);  box-shadow: 0 3px 0 #a34200; }
+.start-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ══════════════════════════════════════
+   ② GAME SCREEN — CSS Grid, no scroll on outer
+══════════════════════════════════════ */
+#screen-game {
+  display: none;
+  grid-template-columns: var(--panel-w) 1fr;
+  grid-template-rows: 1fr;
+  overflow: hidden;
+}
+#screen-game.active {
+  display: grid;
+}
+
+/* ── LEFT: Shopping List Panel ── */
+#list-panel {
+  width: var(--panel-w);
+  min-width: var(--panel-w);
+  /* in grid context, height auto-fills the row */
+  background: white;
+  border-right: 4px solid var(--sun);
+  display: flex; flex-direction: column;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+  z-index: 20;
+  overflow: hidden;
+  flex-shrink: 0;
+  min-height: 0;
+}
+#list-panel-header {
+  background: linear-gradient(135deg, var(--orange-l), var(--orange));
+  padding: 18px 18px 14px;
+  border-bottom: 3px solid var(--orange-d);
+}
+#list-panel-header .store-name {
+  font-size: 1rem; font-weight: 900; color: rgba(255,255,255,0.85);
+  margin-bottom: 2px;
+}
+#list-panel-header h2 {
+  font-size: 1.2rem; font-weight: 900; color: white;
+}
+#list-score-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 10px;
+}
+.lp-badge {
+  font-size: .78rem; font-weight: 900; color: white;
+  background: rgba(255,255,255,0.2);
+  border-radius: 20px; padding: 4px 10px;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+#score-chip {
+  background: var(--sun); color: var(--orange-d);
+  font-weight: 900; font-size: .9rem;
+  padding: 5px 12px; border-radius: 20px;
+}
+
+#list-items {
+  flex: 1; overflow-y: auto; padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.list-row {
+  background: #f9f9f9;
+  border-radius: 14px; padding: 11px 14px;
+  border: 3px solid #e0e0e0;
+  display: flex; align-items: center; gap: 10px;
+  transition: all .4s;
+  position: relative;
+}
+.list-row.current {
+  border-color: var(--orange);
+  background: #FFF8E1;
+  box-shadow: 0 3px 12px rgba(255,111,0,.2);
+  animation: currentPulse 1.5s ease-in-out infinite;
+}
+@keyframes currentPulse {
+  0%,100%{ box-shadow: 0 3px 12px rgba(255,111,0,.2); }
+  50%{ box-shadow: 0 3px 20px rgba(255,111,0,.45); }
+}
+.list-row.done {
+  background: #F1F8E9; border-color: var(--lv1c);
+  opacity: .85;
+}
+.list-row.done .lr-main { text-decoration: line-through; color: #aaa; }
+.lr-emoji { font-size: 1.8rem; flex-shrink: 0; }
+.lr-main { flex: 1; }
+.lr-name  { font-size: .95rem; font-weight: 900; color: #333; }
+.lr-qty   { font-size: .8rem; font-weight: 700; color: #888; }
+.lr-check { font-size: 1.3rem; flex-shrink: 0; }
+.lr-arrow {
+  position: absolute; right: -2px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem; color: var(--orange);
+}
+
+/* Progress bar at bottom of list panel */
+#list-progress {
+  padding: 12px 16px 16px;
+  border-top: 2px solid #f0f0f0;
+}
+#list-progress-label {
+  font-size: .8rem; font-weight: 800; color: #999;
+  margin-bottom: 6px; text-align: center;
+}
+#list-progress-bar {
+  height: 10px; background: #e0e0e0;
+  border-radius: 10px; overflow: hidden;
+}
+#list-progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--green), var(--sun));
+  border-radius: 10px; transition: width .6s ease;
+  position: relative;
+}
+#round-chip {
+  text-align: center; margin-top: 8px;
+  font-size: .8rem; font-weight: 800; color: #999;
+}
+
+/* ── RIGHT: Main Game Area ── */
+#game-main {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* top bar */
+#game-topbar {
+  background: white;
+  border-bottom: 3px solid #e0e0e0;
+  padding: 10px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  flex-shrink: 0;
+}
+#topbar-stage {
+  font-size: 1.1rem; font-weight: 900; color: var(--orange);
+  display: flex; align-items: center; gap: 10px;
+}
+.stage-pill {
+  font-size: .78rem; font-weight: 900;
+  padding: 4px 12px; border-radius: 20px;
+  background: #FFF3E0; color: var(--orange-d);
+  border: 2px solid var(--sun);
+}
+#topbar-right { display: flex; gap: 10px; align-items: center; }
+
+/* stage steps */
+#stage-steps {
+  display: flex; align-items: center; gap: 6px;
+}
+.sstep {
+  display: flex; align-items: center; gap: 4px;
+  font-size: .82rem; font-weight: 800;
+  padding: 5px 12px; border-radius: 20px;
+  color: #ccc; background: #f0f0f0;
+  border: 2px solid #e0e0e0;
+  transition: all .35s;
+  white-space: nowrap;
+}
+.sstep.active {
+  color: var(--orange); background: #FFF8E1;
+  border-color: var(--sun);
+  box-shadow: 0 2px 8px rgba(255,111,0,.2);
+}
+.sstep.done {
+  color: var(--green); background: #F1F8E9;
+  border-color: var(--lv1c);
+}
+.sstep-num {
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; font-weight: 900;
+  background: currentColor; color: white;
+  flex-shrink: 0;
+}
+.sstep.active .sstep-num { background: var(--orange); color: white; }
+.sstep.done  .sstep-num  { background: var(--green);  color: white; }
+.sstep:not(.active):not(.done) .sstep-num { background: #ccc; color: white; }
+
+/* main content area */
+#game-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px 28px 40px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 16px;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Story / question box */
+#story-box {
+  background: white; border-radius: 18px;
+  padding: 16px 22px; width: 100%; max-width: 680px;
+  box-shadow: var(--shadow);
+  border-left: 7px solid var(--purple);
+}
+#story-speaker {
+  font-size: .82rem; font-weight: 900; color: var(--purple); margin-bottom: 5px;
+}
+#story-text {
+  font-size: 1.15rem; font-weight: 800; color: #333;
+  line-height: 1.6;
+}
+#story-text .hl { color: var(--orange); }
+
+/* Big scene card */
+#scene-card {
+  background: white; border-radius: 24px;
+  padding: 24px 28px; width: 100%; max-width: 680px;
+  box-shadow: var(--shadow-l);
+  border: 4px solid var(--sun);
+  display: flex; flex-direction: column;
+  align-items: center; gap: 18px;
+  position: relative;
+  overflow: visible;
+}
+#scene-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 70% 10%, rgba(255,213,79,.18) 0%, transparent 65%);
+  pointer-events: none;
+}
+#scene-label {
+  font-size: 1.4rem; font-weight: 900; color: var(--orange);
+  text-align: center;
+}
+
+/* Corner / item grids */
+.choice-grid {
+  display: flex; flex-wrap: wrap; gap: 14px;
+  justify-content: center; width: 100%;
+}
+
+.corner-card {
+  background: white; border-radius: 20px;
+  padding: 20px 24px; text-align: center;
+  border: 4px solid #e0e0e0;
+  cursor: pointer; min-width: 130px;
+  transition: transform .2s, box-shadow .2s, border-color .2s, background .2s;
+  box-shadow: 0 4px 14px rgba(0,0,0,.08);
+  position: relative;
+}
+.corner-card:hover { transform: translateY(-5px) scale(1.04); box-shadow: 0 10px 28px rgba(0,0,0,.15); }
+.corner-card.correct { border-color: var(--green)!important; background: #E8F5E9!important; }
+.corner-card.wrong   { border-color: var(--red)!important;   background: #FFEBEE!important; animation: shake .4s; }
+.corner-card .cc-emoji { font-size: 2.8rem; display: block; margin-bottom: 6px; }
+.corner-card .cc-name  { font-size: 1rem; font-weight: 900; color: #444; }
+.corner-card .cc-sub   { font-size: .78rem; color: #aaa; font-weight: 700; margin-top: 2px; }
+
+.item-card {
+  background: white; border-radius: 18px;
+  padding: 16px 18px; text-align: center;
+  border: 4px solid #e0e0e0;
+  cursor: pointer; min-width: 90px;
+  transition: transform .18s, box-shadow .18s, border-color .18s, background .18s;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+.item-card:hover { transform: scale(1.1) rotate(-1deg); box-shadow: 0 8px 22px rgba(0,0,0,.15); }
+.item-card.correct { border-color: var(--green)!important; background: #E8F5E9!important; }
+.item-card.wrong   { border-color: var(--red)!important;   background: #FFEBEE!important; animation: shake .4s; }
+.item-card .ic-emoji { font-size: 2.8rem; display: block; }
+.item-card .ic-name  { display: none; }
+
+@keyframes shake {
+  0%,100%{ transform: translateX(0); }
+  25%{ transform: translateX(-8px); }
+  75%{ transform: translateX(8px); }
+}
+
+/* Count selector */
+#count-area {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 18px; width: 100%;
+}
+.target-item-display {
+  font-size: 4rem; text-align: center;
+  filter: drop-shadow(2px 3px 4px rgba(0,0,0,.15));
+  animation: itemBob 2s ease-in-out infinite;
+}
+@keyframes itemBob {
+  0%,100%{ transform: translateY(0); }
+  50%{ transform: translateY(-8px); }
+}
+.count-question {
+  font-size: 1.2rem; font-weight: 900;
+  color: var(--dark); text-align: center;
+  background: #FFF8E1; border-radius: 14px;
+  padding: 10px 24px; border: 3px solid var(--sun);
+}
+.count-question span { color: var(--orange); font-size: 1.5rem; }
+.num-grid {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  justify-content: center;
+}
+.num-btn {
+  width: 72px; height: 72px; border-radius: 50%;
+  border: 4px solid #B0BEC5;
+  background: white; font-size: 1.6rem; font-weight: 900;
+  cursor: pointer; font-family: var(--font);
+  transition: transform .15s, background .15s, border-color .15s;
+  box-shadow: 0 5px 0 #78909C;
+}
+.num-btn:hover { background: #E3F2FD; border-color: var(--blue); transform: scale(1.1); }
+.num-btn.correct-ans {
+  background: var(--green)!important; color: white;
+  border-color: var(--green)!important;
+  box-shadow: 0 5px 0 #1B5E20;
+  animation: numPop .4s cubic-bezier(.175,.885,.32,1.275);
+}
+.num-btn.wrong-ans {
+  background: #FFEBEE!important; border-color: var(--red)!important;
+  animation: shake .4s;
+}
+@keyframes numPop {
+  from{ transform: scale(.7); }
+  to{ transform: scale(1); }
+}
+
+/* ══════════════════════════════════════
+   DRAG & DROP COUNT STAGE
+══════════════════════════════════════ */
+#dnd-stage {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Shelf = source of draggable items */
+#dnd-shelf {
+  background: linear-gradient(180deg, #8B6914 0%, #A0522D 100%);
+  border-radius: 16px;
+  padding: 14px 18px 18px;
+  width: 100%;
+  box-shadow: 0 6px 0 #5D3A1A, 0 8px 20px rgba(0,0,0,0.25);
+  position: relative;
+}
+#dnd-shelf::before {
+  content: '🏪 たな';
+  position: absolute;
+  top: -11px; left: 16px;
+  background: #A0522D;
+  color: #FFD54F;
+  font-size: .75rem; font-weight: 900;
+  padding: 2px 10px; border-radius: 20px;
+  border: 2px solid #FFD54F;
+}
+#dnd-shelf-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.shelf-item {
+  background: white;
+  border-radius: 14px;
+  padding: 12px 14px;
+  text-align: center;
+  border: 3px solid #e0e0e0;
+  cursor: grab;
+  user-select: none;
+  transition: transform .15s, box-shadow .15s, opacity .2s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  min-width: 72px;
+  touch-action: none;
+}
+.shelf-item:hover {
+  transform: scale(1.08) translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  border-color: var(--orange);
+}
+.shelf-item.dragging {
+  opacity: 0.35;
+  transform: scale(0.95);
+  cursor: grabbing;
+}
+.shelf-item.used {
+  opacity: 0.25;
+  pointer-events: none;
+  filter: grayscale(0.8);
+}
+.shelf-item .si-emoji { font-size: 2rem; display: block; }
+.shelf-item .si-num   { font-size: .75rem; font-weight: 900; color: #888; margin-top: 2px; }
+
+/* Ghost dragging element */
+#drag-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9000;
+  font-size: 2.8rem;
+  transform: translate(-50%, -50%) scale(1.3);
+  filter: drop-shadow(3px 6px 8px rgba(0,0,0,0.35));
+  transition: none;
+  display: none;
+}
+
+/* Count tracker */
+#dnd-counter {
+  background: white;
+  border-radius: 14px;
+  padding: 8px 22px;
+  border: 3px solid var(--sky);
+  font-size: 1.1rem; font-weight: 900; color: #333;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
+#dnd-counter .dc-current { color: var(--orange); font-size: 1.5rem; }
+#dnd-counter .dc-target  { color: var(--green);  }
+
+/* Basket drop zone */
+#dnd-basket {
+  background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+  border-radius: 18px;
+  padding: 14px 18px;
+  border: 4px dashed var(--orange-l);
+  width: 100%;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: background .25s, border-color .25s, transform .15s;
+  position: relative;
+}
+#dnd-basket.drag-over {
+  background: linear-gradient(135deg, #FFF8E1, #FFECB3);
+  border-color: var(--orange);
+  border-style: solid;
+  transform: scale(1.02);
+  box-shadow: 0 0 0 4px rgba(255,111,0,0.2);
+}
+#dnd-basket.basket-success {
+  background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+  border-color: var(--green);
+  border-style: solid;
+}
+#dnd-basket-label {
+  font-size: .88rem; font-weight: 900;
+  color: var(--orange);
+  display: flex; align-items: center; gap: 6px;
+}
+#dnd-basket-label .basket-arrow {
+  font-size: 1.2rem;
+  animation: arrowBounce 1s ease-in-out infinite;
+}
+@keyframes arrowBounce {
+  0%,100%{ transform: translateY(0); }
+  50%{ transform: translateY(-5px); }
+}
+#dnd-basket-items {
+  display: flex; flex-wrap: wrap;
+  gap: 6px; justify-content: center;
+}
+.basket-dropped {
+  background: white;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 1.5rem;
+  border: 2px solid var(--sun);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  animation: dropPop .35s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes dropPop {
+  from{ transform: scale(0) rotate(-10deg); opacity: 0; }
+  to  { transform: scale(1) rotate(0deg);   opacity: 1; }
+}
+
+/* Too many warning shake */
+@keyframes basketShake {
+  0%,100%{ transform: scale(1.02) translateX(0); }
+  25%{ transform: scale(1.02) translateX(-6px); }
+  75%{ transform: scale(1.02) translateX(6px); }
+}
+#dnd-basket.too-many {
+  animation: basketShake .4s ease;
+  border-color: var(--red);
+  background: linear-gradient(135deg, #FFEBEE, #FFCDD2);
+}
+
+/* Confirm button */
+#dnd-confirm {
+  padding: 14px 36px;
+  border-radius: 50px; border: none;
+  background: var(--green); color: white;
+  font-family: var(--font); font-size: 1.05rem; font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #1B5E20;
+  transition: transform .15s, box-shadow .15s, opacity .2s;
+  opacity: 0; pointer-events: none;
+}
+#dnd-confirm.ready {
+  opacity: 1; pointer-events: all;
+  animation: confirmAppear .4s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes confirmAppear {
+  from{ transform: scale(.7); opacity: 0; }
+  to  { transform: scale(1);  opacity: 1; }
+}
+#dnd-confirm:hover { transform: translateY(-3px); box-shadow: 0 9px 0 #1B5E20; }
+
+/* Remove last button */
+#dnd-remove {
+  font-size: .82rem; font-weight: 800;
+  color: #999; background: none; border: none;
+  cursor: pointer; font-family: var(--font);
+  padding: 4px 8px; border-radius: 8px;
+  transition: color .15s, background .15s;
+}
+#dnd-remove:hover { color: var(--red); background: #FFEBEE; }
+#dnd-remove.hidden { display: none; }
+
+/* Color stage */
+.color-grid {
+  display: flex; flex-wrap: wrap; gap: 18px;
+  justify-content: center;
+}
+.color-opt { text-align: center; cursor: pointer; }
+.color-circle {
+  width: 72px; height: 72px; border-radius: 50%;
+  border: 5px solid white;
+  box-shadow: 0 4px 14px rgba(0,0,0,.2);
+  margin: 0 auto 6px;
+  transition: transform .2s;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+}
+.color-circle:hover { transform: scale(1.15); }
+.color-circle.sel   { box-shadow: 0 0 0 4px white, 0 0 0 8px currentColor; transform: scale(1.15); }
+.color-label { font-size: .9rem; font-weight: 900; color: #555; }
+
+/* checkout */
+.checkout-basket {
+  background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+  border-radius: 18px; padding: 16px 20px;
+  border: 3px dashed var(--orange-l);
+  width: 100%;
+  display: flex; flex-wrap: wrap; gap: 10px;
+  align-items: center; justify-content: center;
+}
+.checkout-basket-label {
+  width: 100%; font-size: .9rem; font-weight: 900;
+  color: var(--orange); text-align: center; margin-bottom: 4px;
+}
+.basket-chip {
+  background: white; border-radius: 12px;
+  padding: 8px 14px; font-size: 1.3rem;
+  border: 3px solid var(--sun);
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  display: flex; align-items: center; gap: 4px;
+  animation: popIn .35s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+.basket-chip .bc-qty {
+  font-size: .75rem; font-weight: 900;
+  color: var(--orange); margin-left: 2px;
+}
+.say-btn {
+  width: 100%; padding: 15px 20px;
+  border-radius: 16px; border: 3px solid #90CAF9;
+  background: white; font-family: var(--font);
+  font-size: 1.05rem; font-weight: 800;
+  cursor: pointer; color: var(--blue);
+  text-align: left; display: flex; align-items: center; gap: 10px;
+  transition: all .2s; margin-bottom: 8px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.07);
+}
+.say-btn:hover { background: #E3F2FD; border-color: var(--blue); transform: translateX(5px); }
+.say-btn.said  { background: #E8F5E9; border-color: var(--green); color: var(--green); pointer-events: none; }
+
+/* General buttons */
+.btn {
+  padding: 14px 32px; border-radius: 50px; border: none;
+  font-family: var(--font); font-size: 1.05rem; font-weight: 900;
+  cursor: pointer; letter-spacing: .5px;
+  transition: transform .15s, box-shadow .15s;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active{ transform: translateY(2px); }
+.btn-orange{ background: var(--orange-l); color: white; box-shadow: 0 6px 0 var(--orange-d); }
+.btn-green { background: var(--green); color: white; box-shadow: 0 6px 0 #1B5E20; }
+.btn-blue  { background: var(--blue);  color: white; box-shadow: 0 6px 0 #0D47A1; }
+.btn-yellow{ background: var(--sun);   color: #6D4C00; box-shadow: 0 6px 0 #E6A800; }
+.btn-purple{ background: var(--purple);color: white; box-shadow: 0 6px 0 #4A0072; }
+.btn-teal  { background: var(--teal);  color: white; box-shadow: 0 6px 0 #006064; }
+
+/* ── Character bubble ── */
+#char-wrap {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  display: flex; flex-direction: column; align-items: flex-end;
+  z-index: 50; cursor: pointer; user-select: none;
+  pointer-events: none;
+}
+#char-wrap > * { pointer-events: all; }
+#char-bubble {
+  background: white; border-radius: 16px;
+  padding: 8px 14px; font-size: .92rem; font-weight: 800;
+  color: #333; box-shadow: var(--shadow);
+  border: 3px solid var(--sun);
+  max-width: 180px; text-align: center;
+  margin-bottom: 6px;
+  opacity: 0; transform: translateY(6px);
+  transition: opacity .3s, transform .3s;
+  pointer-events: none;
+}
+#char-bubble.show { opacity: 1; transform: translateY(0); }
+#char-bubble::after {
+  content: ''; position: absolute;
+  bottom: -10px; right: 24px;
+  border: 6px solid transparent;
+  border-top-color: var(--sun);
+}
+#char-emoji {
+  font-size: 3.2rem;
+  animation: charBob 2.2s ease-in-out infinite;
+  filter: drop-shadow(2px 4px 5px rgba(0,0,0,.2));
+  transition: transform .3s;
+}
+@keyframes charBob {
+  0%,100%{ transform: translateY(0); }
+  50%{ transform: translateY(-8px); }
+}
+#char-emoji:hover { transform: scale(1.2) rotate(6deg)!important; animation: none; }
+
+/* ══════════════════════════════════════
+   TEACHER PANEL (bottom bar)
+══════════════════════════════════════ */
+#teacher-panel {
+  background: white;
+  border-top: 4px solid var(--purple);
+  padding: 10px 20px 12px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 -4px 16px rgba(0,0,0,.1);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  min-height: 52px;
+  z-index: 30;
+}
+#teacher-label {
+  font-size: .78rem; font-weight: 900; color: var(--purple);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  white-space: nowrap;
+}
+#t-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.t-btn {
+  padding: 7px 15px; border-radius: 30px; border: none;
+  font-family: var(--font); font-size: .82rem; font-weight: 800;
+  cursor: pointer; background: #EDE7F6; color: var(--purple);
+  border: 2px solid #CE93D8;
+  transition: all .15s;
+}
+.t-btn:hover { background: var(--purple); color: white; transform: scale(1.05); }
+.t-btn.flash { background: #4527A0; color: white; }
+
+/* Teacher toggle */
+#t-toggle {
+  position: fixed; top: 12px; right: 16px; z-index: 900;
+  background: var(--purple); color: white; border: none;
+  border-radius: 30px; padding: 8px 16px;
+  font-size: .82rem; font-weight: 800;
+  cursor: pointer; font-family: var(--font);
+  box-shadow: 0 3px 12px rgba(0,0,0,.2);
+}
+
+/* ══════════════════════════════════════
+   REWARD POPUP
+══════════════════════════════════════ */
+#reward-popup {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.5); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+#reward-popup.show { opacity: 1; pointer-events: all; }
+#reward-box {
+  background: white; border-radius: 30px;
+  padding: 36px 44px; text-align: center;
+  box-shadow: var(--shadow-l); border: 6px solid var(--sun);
+  max-width: 380px; width: 92%;
+  transform: scale(.5);
+  transition: transform .4s cubic-bezier(.175,.885,.32,1.275);
+}
+#reward-popup.show #reward-box { transform: scale(1); }
+.rw-big  { font-size: 4rem; animation: rwBounce .7s ease infinite alternate; }
+@keyframes rwBounce { from{transform:translateY(0)} to{transform:translateY(-12px)} }
+.rw-title{ font-size: 1.8rem; font-weight: 900; color: var(--orange); margin: 8px 0; }
+.rw-pts  { font-size: 1.1rem; color: #888; margin-bottom: 8px; }
+.rw-msg  { font-size: 1rem; color: #555; margin-bottom: 22px; line-height: 1.6; }
+
+/* ══════════════════════════════════════
+   MISSION CLEAR SCREEN
+══════════════════════════════════════ */
+#screen-clear {
+  background: radial-gradient(circle at 50% 40%, #FFF9C4, #FFD54F 45%, #FF8F00);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+#screen-clear.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 32px 20px 48px;
+}
+.mc-trophy { font-size: 8rem; animation: trophySpin 2s ease-in-out infinite alternate; }
+@keyframes trophySpin {
+  from{ transform: scale(1) rotate(-5deg); filter: drop-shadow(0 0 14px rgba(255,200,0,.7)); }
+  to  { transform: scale(1.1) rotate(5deg); filter: drop-shadow(0 0 36px rgba(255,165,0,1)); }
+}
+.mc-h1  { font-size: 3rem; font-weight: 900; color: white; text-shadow: 3px 3px 0 rgba(0,0,0,.2); }
+.mc-sub { font-size: 1.15rem; color: rgba(255,255,255,.9); }
+.mc-score-box {
+  background: rgba(255,255,255,.35); border-radius: 22px;
+  padding: 14px 44px; font-size: 2rem; font-weight: 900; color: white;
+}
+.mc-list-summary {
+  background: rgba(255,255,255,.92); border-radius: 20px;
+  padding: 16px 24px; max-width: 480px; width: 90%;
+}
+.mc-list-summary h4 { font-size: 1rem; font-weight: 900; color: var(--orange); margin-bottom: 10px; }
+.mc-item-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 0; font-size: .95rem; font-weight: 700; color: #444;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* CONFETTI */
+.cfp {
+  position: fixed; border-radius: 2px;
+  animation: cfFall linear forwards;
+  pointer-events: none; z-index: 990;
+}
+@keyframes cfFall {
+  0%  { transform: translateY(-20px) rotate(0deg);   opacity: 1; }
+  100%{ transform: translateY(108vh) rotate(720deg);  opacity: 0; }
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE (iPad portrait ~ 768px)
+══════════════════════════════════════ */
+@media (max-width: 820px) {
+  :root { --panel-w: 220px; }
+  #game-content { padding: 18px 16px; }
+  .corner-card { min-width: 110px; padding: 16px 16px; }
+  .item-card { min-width: 90px; padding: 12px 12px; }
+  .num-btn { width: 60px; height: 60px; font-size: 1.4rem; }
+  #stage-steps { gap: 4px; }
+  .sstep { padding: 4px 9px; font-size: .75rem; }
+}
+@media (max-width: 600px) {
+  :root { --panel-w: 160px; }
+  .lv-grid { flex-direction: column; }
+  .title-h1 { font-size: 1.9rem; }
+  .title-card { padding: 28px 20px; }
+  #scene-card { padding: 18px 16px; }
+  .corner-card .cc-emoji { font-size: 2.2rem; }
+  .corner-card .cc-name  { font-size: .88rem; }
+  #stage-steps { display: none; }
+}
+
+/* ══════════════════════════════════════
+   HOME BUTTON (in topbar)
+══════════════════════════════════════ */
+#home-btn {
+  background: #FFF8E1;
+  border: 3px solid var(--sun);
+  border-radius: 12px;
+  font-size: 1.3rem;
+  width: 40px; height: 40px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: transform .15s, background .15s, box-shadow .15s;
+  box-shadow: 0 3px 0 #e6a800;
+}
+#home-btn:hover {
+  background: var(--sun);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 #e6a800;
+}
+#home-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #e6a800;
+}
+
+/* ══════════════════════════════════════
+   HOME CONFIRM DIALOG
+══════════════════════════════════════ */
+#home-dialog {
+  position: fixed; inset: 0; z-index: 800;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center; justify-content: center;
+}
+#home-dialog.show { display: flex; }
+#home-dialog-box {
+  background: white;
+  border-radius: 28px;
+  padding: 32px 36px;
+  text-align: center;
+  max-width: 340px; width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,.3);
+  border: 5px solid var(--sun);
+  animation: hdPop .35s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes hdPop {
+  from { transform: scale(.7); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
+}
+#hd-title {
+  font-size: 1.4rem; font-weight: 900;
+  color: var(--orange); margin-bottom: 10px;
+}
+#hd-msg {
+  font-size: .95rem; color: #666;
+  line-height: 1.7; margin-bottom: 22px;
+}
+#hd-btns {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+}
+
+/* ══════════════════════════════════════
+   SHOPPING MEMO OVERLAY
+══════════════════════════════════════ */
+#memo-overlay {
+  position: fixed; inset: 0; z-index: 700;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+#memo-overlay.show { display: flex; }
+
+#memo-paper {
+  /* hand-written memo feel */
+  background: #FEFCE8;
+  border-radius: 4px 4px 6px 6px;
+  max-width: 360px; width: 100%;
+  padding: 0 0 28px;
+  box-shadow:
+    0 10px 40px rgba(0,0,0,.35),
+    4px 4px 0 #e8d96a,
+    /* ruled lines via repeating gradient */
+    repeating-linear-gradient(
+      transparent,
+      transparent 31px,
+      #c5d6e8 31px,
+      #c5d6e8 32px
+    );
+  position: relative;
+  animation: memoSlide .5s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes memoSlide {
+  from { transform: translateY(-40px) rotate(-3deg); opacity: 0; }
+  to   { transform: translateY(0)     rotate(-1deg); opacity: 1; }
+}
+
+/* top tape strip */
+#memo-top-strip {
+  height: 28px;
+  background: linear-gradient(135deg, #FFD54F88, #FFB30088);
+  border-radius: 4px 4px 0 0;
+  border-bottom: 2px solid #e6c000;
+  margin-bottom: 20px;
+  position: relative;
+}
+#memo-top-strip::before {
+  content: '✂ - - - - - - - - - - - - - - - - - -';
+  position: absolute; bottom: -14px; left: 12px;
+  font-size: .65rem; color: #ccc; letter-spacing: 1px;
+  white-space: nowrap; overflow: hidden; width: 90%;
+}
+
+#memo-title {
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  font-size: 1.3rem; font-weight: 900;
+  color: #D84315;
+  text-align: center;
+  margin-bottom: 2px;
+  padding: 0 20px;
+  /* slight hand-tilt */
+  transform: rotate(-0.5deg);
+}
+#memo-subtitle {
+  font-size: .82rem; font-weight: 700;
+  color: #aaa; text-align: center;
+  margin-bottom: 18px;
+  padding: 0 20px;
+}
+
+#memo-lines {
+  padding: 4px 28px 18px;
+  display: flex; flex-direction: column; gap: 0;
+}
+.memo-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;               /* matches ruled line height */
+  border-bottom: none;        /* lines come from bg gradient */
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+  animation: memoLineIn .4s both;
+}
+@keyframes memoLineIn {
+  from { transform: translateX(-12px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+.memo-line .ml-check {
+  font-size: 1rem; color: #D84315;
+  flex-shrink: 0;
+}
+.memo-line .ml-emoji { font-size: 1.3rem; flex-shrink: 0; }
+.memo-line .ml-text  { flex: 1; }
+.memo-line .ml-qty   {
+  font-size: .85rem; color: #D84315; font-weight: 900;
+  background: #FFF3E0; border-radius: 8px;
+  padding: 1px 7px;
+  flex-shrink: 0;
+}
+
+#memo-footer {
+  display: flex; align-items: center; justify-content: flex-end;
+  padding: 2px 28px 0;
+  gap: 8px;
+}
+#memo-stamp {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 3px solid #D84315;
+  color: #D84315; font-size: 1.4rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  opacity: .7;
+  transform: rotate(-15deg);
+}
+#memo-from {
+  font-size: .78rem; font-weight: 700;
+  color: #aaa; font-style: italic;
+}
+
+#memo-start-btn {
+  display: block;
+  margin: 22px auto 0;
+  padding: 14px 36px;
+  border-radius: 50px; border: none;
+  background: linear-gradient(135deg, var(--orange-l), var(--orange-d));
+  color: white; font-family: var(--font);
+  font-size: 1.1rem; font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #a34200;
+  transition: transform .15s, box-shadow .15s;
+  letter-spacing: .5px;
+  animation: btnPulse 1.5s ease-in-out infinite;
+}
+#memo-start-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 9px 0 #a34200;
+  animation: none;
+}
+@keyframes btnPulse {
+  0%,100% { box-shadow: 0 6px 0 #a34200; }
+  50%      { box-shadow: 0 6px 18px rgba(255,111,0,.5); }
+}
+</style>
+</head>
+<body>
+
+<!-- BG -->
+<div id="bg-scene">
+  <div class="cloud" style="top:5%;animation-duration:38s;animation-delay:-8s">
+    <svg width="140" height="56"><ellipse cx="70" cy="40" rx="66" ry="22" fill="white"/><circle cx="46" cy="32" r="20" fill="white"/><circle cx="82" cy="24" r="26" fill="white"/><circle cx="112" cy="35" r="16" fill="white"/></svg>
+  </div>
+  <div class="cloud" style="top:14%;animation-duration:56s;animation-delay:-22s">
+    <svg width="100" height="44"><ellipse cx="50" cy="32" rx="48" ry="17" fill="white"/><circle cx="33" cy="24" r="16" fill="white"/><circle cx="60" cy="18" r="20" fill="white"/><circle cx="82" cy="27" r="13" fill="white"/></svg>
+  </div>
+  <div class="cloud" style="top:2%;animation-duration:72s;animation-delay:-40s">
+    <svg width="170" height="60"><ellipse cx="85" cy="44" rx="80" ry="24" fill="white"/><circle cx="56" cy="33" r="25" fill="white"/><circle cx="100" cy="25" r="32" fill="white"/><circle cx="135" cy="37" r="20" fill="white"/></svg>
+  </div>
+</div>
+
+<!-- Teacher Toggle -->
+<button id="t-toggle" onclick="toggleTeacher()">👨‍🏫 先生モード: ON</button>
+
+<!-- ══════════════ TITLE SCREEN ══════════════ -->
+<div class="screen active" id="screen-title">
+  <div class="title-card">
+    <div class="title-store">🏪</div>
+    <h1 class="title-h1">🛒 スーパーへいこう！</h1>
+    <p class="title-sub">おつかいだいさくせん</p>
+
+    <div class="lv-grid">
+      <div class="lv-card" data-lv="1" onclick="selectLv(1,this)">
+        <div class="lv-icon">🌱</div>
+        <div class="lv-name">かんたん</div>
+        <div class="lv-info">2〜3しょうひん<br>1〜3こ<br>くだもの・やさい・のみもの</div>
+        <div class="lv-stars">⭐</div>
+      </div>
+      <div class="lv-card" data-lv="2" onclick="selectLv(2,this)">
+        <div class="lv-icon">🌟</div>
+        <div class="lv-name">ふつう</div>
+        <div class="lv-info">3〜5しょうひん<br>1〜5こ<br>＋いろ もんだい</div>
+        <div class="lv-stars">⭐⭐</div>
+      </div>
+      <div class="lv-card" data-lv="3" onclick="selectLv(3,this)">
+        <div class="lv-icon">🔥</div>
+        <div class="lv-name">むずかしい</div>
+        <div class="lv-info">4〜6しょうひん<br>1〜7こ<br>ぜんカテゴリー</div>
+        <div class="lv-stars">⭐⭐⭐</div>
+      </div>
+    </div>
+
+    <button class="start-btn" id="start-btn" onclick="startGame()" disabled>
+      レベルを えらんでね 👆
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════ GAME SCREEN ══════════════ -->
+<div class="screen" id="screen-game">
+
+  <!-- LEFT: Shopping List -->
+  <div id="list-panel">
+    <div id="list-panel-header">
+      <div class="store-name">🏪 スーパーマーケット</div>
+      <h2>📋 おかいものリスト</h2>
+      <div id="list-score-row">
+        <div class="lp-badge" id="lp-lv-badge">Lv.1</div>
+        <div id="score-chip">⭐ <span id="score-num">0</span></div>
+      </div>
+    </div>
+
+    <div id="list-items">
+      <!-- generated -->
+    </div>
+
+    <div id="list-progress">
+      <div id="list-progress-label">しんちょく</div>
+      <div id="list-progress-bar">
+        <div id="list-progress-fill" style="width:0%"></div>
+      </div>
+      <div id="round-chip">ラウンド <span id="round-num">1</span></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Game Content -->
+  <div id="game-main">
+    <!-- Topbar -->
+    <div id="game-topbar">
+      <div id="topbar-stage">
+        <!-- Home button -->
+        <button id="home-btn" onclick="confirmGoHome()" title="ホームへもどる">🏠</button>
+        <span id="current-item-display">🛒</span>
+        <div class="stage-pill" id="stage-pill">スタート</div>
+      </div>
+      <div id="topbar-right">
+        <div id="stage-steps">
+          <div class="sstep" id="ss-corner"><div class="sstep-num">1</div>コーナー</div>
+          <div style="color:#ccc;font-size:.9rem">▶</div>
+          <div class="sstep" id="ss-item"><div class="sstep-num">2</div>しなもの</div>
+          <div style="color:#ccc;font-size:.9rem">▶</div>
+          <div class="sstep" id="ss-count"><div class="sstep-num">3</div>こすう</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scrollable content -->
+    <div id="game-content">
+      <!-- Story -->
+      <div id="story-box">
+        <div id="story-speaker">📢 ナレーター</div>
+        <div id="story-text">ゲームが はじまります！</div>
+      </div>
+      <!-- Scene card -->
+      <div id="scene-card">
+        <div id="scene-label"></div>
+        <div id="scene-body"></div>
+      </div>
+      <!-- Bottom spacer so last button clears char/teacher -->
+      <div style="height:20px;flex-shrink:0"></div>
+    </div>
+
+    <!-- Teacher panel -->
+    <div id="teacher-panel">
+      <div id="teacher-label">👨‍🏫 せんせい</div>
+      <div id="t-btns"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Character (fixed, outside scroll) -->
+<div id="char-wrap" onclick="charTalk()">
+  <div id="char-bubble"></div>
+  <div id="char-emoji">🧒</div>
+</div>
+
+<!-- ══════════════ CLEAR SCREEN ══════════════ -->
+<div class="screen" id="screen-clear">
+  <div class="mc-trophy">🏆</div>
+  <h1 class="mc-h1">MISSION CLEAR！</h1>
+  <p class="mc-sub">おかいもの だいせいこう！🎉</p>
+  <div class="mc-score-box">⭐ <span id="mc-score-num">0</span> てん</div>
+  <div class="mc-list-summary" id="mc-summary"></div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+    <button class="btn btn-orange" onclick="goTitle()">タイトルへ</button>
+    <button class="btn btn-green"  onclick="replayGame()">もう一度あそぶ！</button>
+    <button class="btn btn-teal"   onclick="nextRound()">つぎのおつかい→</button>
+  </div>
+</div>
+
+<!-- REWARD POPUP -->
+<div id="reward-popup">
+  <div id="reward-box">
+    <div class="rw-big"  id="rw-big"></div>
+    <div class="rw-title"id="rw-title"></div>
+    <div class="rw-pts"  id="rw-pts"></div>
+    <div class="rw-msg"  id="rw-msg"></div>
+    <button class="btn btn-green" id="rw-next-btn" onclick="rewardNext()">つぎへ！ →</button>
+  </div>
+</div>
+
+<!-- HOME CONFIRM DIALOG -->
+<div id="home-dialog">
+  <div id="home-dialog-box">
+    <div style="font-size:2.8rem;margin-bottom:10px">🏠</div>
+    <div id="hd-title">ホームに もどる？</div>
+    <div id="hd-msg">とちゅうの きろくは きえてしまうよ。<br>ほんとうに もどる？</div>
+    <div id="hd-btns">
+      <button class="btn btn-yellow" onclick="closeHomeDialog()">つづける ▶</button>
+      <button class="btn btn-orange" onclick="goTitle()">ホームへ 🏠</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHOPPING MEMO OVERLAY -->
+<div id="memo-overlay">
+  <div id="memo-paper">
+    <div id="memo-top-strip"></div>
+    <div id="memo-title">📝 おかいものメモ</div>
+    <div id="memo-subtitle">きょうの おつかい</div>
+    <div id="memo-lines"></div>
+    <div id="memo-footer">
+      <div id="memo-stamp">✓</div>
+      <div id="memo-from">おかあさんより</div>
+    </div>
+    <button id="memo-start-btn" onclick="closeMemoAndStart()">
+      🛒 おかいものスタート！
+    </button>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   ITEM DATABASE
+══════════════════════════════════════════════ */
+const CORNERS = {
+  fruit: {
+    label: 'くだものコーナー',
+    emoji: '🍓',
+    sub: 'くだもの',
+    items: [
+      {e:'🍎',n:'りんご',        c:'あか',     colorOk:true,  cat:'fruit'},
+      {e:'🍌',n:'バナナ',        c:'きいろ',   colorOk:true,  cat:'fruit'},
+      {e:'🍊',n:'みかん',        c:'オレンジ', colorOk:true,  cat:'fruit'},
+      {e:'🍇',n:'ぶどう',        c:'むらさき', colorOk:true,  cat:'fruit'},
+      {e:'🍓',n:'いちご',        c:'あか',     colorOk:true,  cat:'fruit'},
+      {e:'🍋',n:'レモン',        c:'きいろ',   colorOk:true,  cat:'fruit'},
+      {e:'🍈',n:'メロン',        c:'みどり',   colorOk:true,  cat:'fruit'},
+      {e:'🍍',n:'パイナップル',  c:'きいろ',   colorOk:false, cat:'fruit'},
+      {e:'🍒',n:'さくらんぼ',    c:'あか',     colorOk:true,  cat:'fruit'},
+      {e:'🥝',n:'キウイ',        c:'みどり',   colorOk:false, cat:'fruit'},
+      {e:'🫐',n:'ブルーベリー',  c:'あお',     colorOk:false, cat:'fruit'},
+      {e:'🍑',n:'もも',          c:'ピンク',   colorOk:false, cat:'fruit'},
+    ]
+  },
+  veg: {
+    label: 'やさいコーナー',
+    emoji: '🥕',
+    sub: 'やさい',
+    items: [
+      {e:'🥕',n:'にんじん',      c:'オレンジ', colorOk:true,  cat:'veg'},
+      {e:'🥦',n:'ブロッコリー',  c:'みどり',   colorOk:true,  cat:'veg'},
+      {e:'🌽',n:'とうもろこし',  c:'きいろ',   colorOk:true,  cat:'veg'},
+      {e:'🍅',n:'トマト',        c:'あか',     colorOk:true,  cat:'veg'},
+      {e:'🍆',n:'なす',          c:'むらさき', colorOk:true,  cat:'veg'},
+      {e:'🥒',n:'きゅうり',      c:'みどり',   colorOk:true,  cat:'veg'},
+      {e:'🌶️',n:'とうがらし',    c:'あか',     colorOk:true,  cat:'veg'},
+      {e:'🥔',n:'じゃがいも',    c:'ちゃいろ', colorOk:false, cat:'veg'},
+      {e:'🧅',n:'たまねぎ',      c:'しろ',     colorOk:false, cat:'veg'},
+      {e:'🫑',n:'ピーマン',      c:'みどり',   colorOk:false, cat:'veg'},
+    ]
+  },
+  drink: {
+    label: 'のみものコーナー',
+    emoji: '🧃',
+    sub: 'のみもの',
+    items: [
+      {e:'🍎',n:'りんごジュース',       c:'あか',     colorOk:true,  cat:'drink'},
+      {e:'🍊',n:'みかんジュース',       c:'オレンジ', colorOk:true,  cat:'drink'},
+      {e:'🍇',n:'ぶどうジュース',       c:'むらさき', colorOk:true,  cat:'drink'},
+      {e:'🍓',n:'いちごジュース',       c:'あか',     colorOk:true,  cat:'drink'},
+      {e:'🍍',n:'パイナップルジュース', c:'きいろ',   colorOk:false, cat:'drink'},
+      {e:'🥝',n:'キウイジュース',       c:'みどり',   colorOk:false, cat:'drink'},
+      {e:'🍵',n:'むぎちゃ',            c:'ちゃいろ', colorOk:false, cat:'drink'},
+      {e:'🌿',n:'おちゃ',              c:'みどり',   colorOk:false, cat:'drink'},
+      {e:'🥤',n:'コーラ',              c:'くろ',     colorOk:false, cat:'drink'},
+      {e:'💧',n:'おみず',              c:'あお',     colorOk:true,  cat:'drink'},
+      {e:'🥛',n:'ぎゅうにゅう',        c:'しろ',     colorOk:false, cat:'drink'},
+    ]
+  },
+  snack: {
+    label: 'おかしコーナー',
+    emoji: '🍪',
+    sub: 'おかし',
+    items: [
+      {e:'🍪',n:'クッキー',            c:'ちゃいろ', colorOk:false, cat:'snack'},
+      {e:'🍫',n:'チョコ',              c:'ちゃいろ', colorOk:false, cat:'snack'},
+      {e:'🧁',n:'カップケーキ',        c:'ピンク',   colorOk:false, cat:'snack'},
+      {e:'🍬',n:'キャンディ',          c:'あか',     colorOk:false, cat:'snack'},
+      {e:'🍿',n:'ポップコーン',        c:'きいろ',   colorOk:false, cat:'snack'},
+      {e:'🎂',n:'ケーキ',              c:'しろ',     colorOk:false, cat:'snack'},
+      {e:'🍩',n:'ドーナツ',            c:'ちゃいろ', colorOk:false, cat:'snack'},
+      {e:'🍭',n:'ペロペロキャンディ',  c:'ピンク',   colorOk:false, cat:'snack'},
+    ]
+  },
+  dairy: {
+    label: 'にゅうせいひんコーナー',
+    emoji: '🥛',
+    sub: 'にゅうせいひん',
+    items: [
+      {e:'🥛',n:'ぎゅうにゅう', c:'しろ',   colorOk:false, cat:'dairy'},
+      {e:'🧀',n:'チーズ',       c:'きいろ', colorOk:false, cat:'dairy'},
+      {e:'🥚',n:'たまご',       c:'しろ',   colorOk:false, cat:'dairy'},
+      {e:'🍞',n:'パン',         c:'きいろ', colorOk:false, cat:'dairy'},
+      {e:'🧈',n:'バター',       c:'きいろ', colorOk:false, cat:'dairy'},
+    ]
+  },
+  frozen: {
+    label: 'れいとうひんコーナー',
+    emoji: '🧊',
+    sub: 'れいとうひん',
+    items: [
+      {e:'🍦',n:'アイスクリーム',   c:'しろ',   colorOk:false, cat:'frozen'},
+      {e:'🍧',n:'かき氷',           c:'あお',   colorOk:false, cat:'frozen'},
+      {e:'🍨',n:'アイス',           c:'しろ',   colorOk:false, cat:'frozen'},
+      {e:'🫙',n:'れいとうたまご',   c:'しろ',   colorOk:false, cat:'frozen'},
+      {e:'🥟',n:'ぎょうざ',         c:'しろ',   colorOk:false, cat:'frozen'},
+      {e:'🍕',n:'ピザ',             c:'オレンジ',colorOk:false,cat:'frozen'},
+    ]
+  },
+  meat: {
+    label: 'にくさかなコーナー',
+    emoji: '🥩',
+    sub: 'にく・さかな',
+    items: [
+      {e:'🥩',n:'にく',     c:'あか',     colorOk:false, cat:'meat'},
+      {e:'🍗',n:'とりにく', c:'ちゃいろ', colorOk:false, cat:'meat'},
+      {e:'🥓',n:'ベーコン', c:'あか',     colorOk:false, cat:'meat'},
+      {e:'🐟',n:'さかな',   c:'あお',     colorOk:false, cat:'meat'},
+      {e:'🦐',n:'えび',     c:'ピンク',   colorOk:false, cat:'meat'},
+      {e:'🦑',n:'いか',     c:'しろ',     colorOk:false, cat:'meat'},
+    ]
+  },
+  daily: {
+    label: 'にちようひんコーナー',
+    emoji: '🧴',
+    sub: 'にちようひん',
+    items: [
+      {e:'🧴',n:'シャンプー',          c:'あお',  colorOk:false, cat:'daily'},
+      {e:'🪥',n:'はブラシ',            c:'あお',  colorOk:false, cat:'daily'},
+      {e:'🧼',n:'せっけん',            c:'きいろ',colorOk:false, cat:'daily'},
+      {e:'🧻',n:'トイレットペーパー',  c:'しろ',  colorOk:false, cat:'daily'},
+      {e:'🪒',n:'カミソリ',            c:'しろ',  colorOk:false, cat:'daily'},
+    ]
+  },
+};
+
+const COLORS = [
+  {n:'あか',   h:'#EF5350', e:'🔴'},
+  {n:'きいろ', h:'#FDD835', e:'🟡'},
+  {n:'みどり', h:'#43A047', e:'🟢'},
+  {n:'あお',   h:'#1E88E5', e:'🔵'},
+  {n:'オレンジ',h:'#FB8C00',e:'🟠'},
+  {n:'むらさき',h:'#8E24AA',e:'🟣'},
+  {n:'ピンク', h:'#E91E63', e:'🩷'},
+  {n:'ちゃいろ',h:'#795548',e:'🟤'},
+  {n:'しろ',   h:'#ECEFF1', e:'⬜'},
+  {n:'くろ',   h:'#424242', e:'⬛'},
+];
+
+const LV_CONFIG = {
+  1: {
+    label:'かんたん', badge:'#388E3C', badgeBg:'#E8F5E9',
+    listSize:[2,3], maxQty:3,
+    cornerKeys:['fruit','veg','drink'],
+    includeColor: false,
+    distractorCorners: 2, distractorItems: 3,
+    pts:{corner:5,item:10,count:15,say:10},
+    charSays:['がんばれ！','どれかな？','いっしょに！','もうすこし！'],
+  },
+  2: {
+    label:'ふつう', badge:'#E65100', badgeBg:'#FFF3E0',
+    listSize:[3,5], maxQty:5,
+    cornerKeys:['fruit','veg','drink','snack','dairy'],
+    includeColor: true,
+    distractorCorners: 3, distractorItems: 5,
+    pts:{corner:5,item:10,color:10,count:20,say:15},
+    charSays:['なんいろかな？','いくつかな？','ファイト！','あとすこし！'],
+  },
+  3: {
+    label:'むずかしい', badge:'#C62828', badgeBg:'#FFEBEE',
+    listSize:[4,6], maxQty:7,
+    cornerKeys:['fruit','veg','drink','snack','dairy','frozen','meat','daily'],
+    includeColor: true,
+    distractorCorners: 4, distractorItems: 7,
+    pts:{corner:5,item:10,color:15,count:25,say:20},
+    charSays:['ちゃんと おぼえてる？','すごい！','てんさい！','ぜんぶ わかる？'],
+  },
+};
+
+/* ══════════════════════════════════════════════
+   GAME STATE
+══════════════════════════════════════════════ */
+let G = {
+  lv: 1,
+  round: 1,
+  score: 0,
+  list: [],          // [{item, qty, done}]
+  itemIdx: 0,        // current item index in list
+  step: null,        // 'corner'|'item'|'color'|'count'|'checkout'|'roundclear'
+  teacherOn: true,
+  rewardNext: null,  // function to call after reward close
+};
+
+/* ══════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+function rnd(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function shuffle(arr){ return [...arr].sort(()=>Math.random()-.5); }
+function rndInt(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
+function pick(arr,n){ return shuffle(arr).slice(0,n); }
+
+function allItemsInCorners(keys){
+  return keys.flatMap(k => CORNERS[k].items);
+}
+
+function setScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+function say(speaker, html){
+  $('story-speaker').textContent = speaker;
+  $('story-text').innerHTML = html;
+}
+
+function charSay(txt){
+  const b = $('char-bubble');
+  b.textContent = txt;
+  b.classList.add('show');
+  clearTimeout(b._t);
+  b._t = setTimeout(()=>b.classList.remove('show'), 3500);
+}
+
+function charTalk(){
+  charSay(rnd(LV_CONFIG[G.lv].charSays));
+  const c = $('char-emoji');
+  c.style.transform = 'scale(1.4) rotate(8deg)'; c.style.animation='none';
+  setTimeout(()=>{ c.style.transform=''; c.style.animation=''; }, 500);
+}
+
+function clearScene(){
+  $('scene-label').textContent = '';
+  $('scene-body').innerHTML = '';
+  $('t-btns').innerHTML = '';
+}
+
+function addScore(pts){
+  G.score += pts;
+  $('score-num').textContent = G.score;
+}
+
+/* ══════════════════════════════════════════════
+   TITLE SCREEN
+══════════════════════════════════════════════ */
+function selectLv(lv, el){
+  G.lv = lv;
+  document.querySelectorAll('.lv-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  const btn = $('start-btn');
+  const cfg = LV_CONFIG[lv];
+  btn.disabled = false;
+  btn.textContent = `「${cfg.label}」で スタート！ 🚀`;
+}
+
+function startGame(){
+  G.round = 1; G.score = 0;
+  setScreen('screen-game');
+  buildRound();
+}
+
+/* ══════════════════════════════════════════════
+   ROUND BUILD
+══════════════════════════════════════════════ */
+function buildRound(){
+  const cfg = LV_CONFIG[G.lv];
+  const size = rndInt(cfg.listSize[0], cfg.listSize[1]);
+  const pool = allItemsInCorners(cfg.cornerKeys);
+  const chosen = pick(pool, size);
+
+  G.list = chosen.map(item => ({
+    item,
+    qty: rndInt(1, cfg.maxQty),
+    done: false,
+    cornerKey: item.cat,
+  }));
+  G.itemIdx = 0;
+
+  // topbar lv badge
+  const badge = $('lp-lv-badge');
+  badge.textContent = `Lv.${G.lv} ${cfg.label}`;
+  badge.style.background = cfg.badge;
+  badge.style.color = 'white';
+  badge.style.padding = '4px 12px';
+  badge.style.borderRadius = '20px';
+
+  $('round-num').textContent = G.round;
+  $('score-num').textContent = G.score;
+
+  renderListPanel();
+  showMemo();   // ← show memo before shopping starts
+}
+
+/* ══════════════════════════════════════════════
+   LIST PANEL (always visible)
+══════════════════════════════════════════════ */
+function renderListPanel(){
+  const el = $('list-items');
+  el.innerHTML = '';
+  G.list.forEach((entry, i) => {
+    const row = mkEl('div', 'list-row' + (i===G.itemIdx?' current':entry.done?' done':''));
+    row.id = `lrow-${i}`;
+    row.innerHTML = `
+      <div class="lr-emoji">${entry.item.e}</div>
+      <div class="lr-main">
+        <div class="lr-name">${entry.item.n}</div>
+        <div class="lr-qty">${entry.qty}こ</div>
+      </div>
+      <div class="lr-check">${entry.done ? '✅' : (i===G.itemIdx ? '👉' : '⬜')}</div>
+    `;
+    el.appendChild(row);
+  });
+  updateProgress();
+}
+
+function updateListPanel(){
+  G.list.forEach((entry, i) => {
+    const row = $(`lrow-${i}`);
+    if(!row) return;
+    row.className = 'list-row' + (i===G.itemIdx?' current':entry.done?' done':'');
+    row.querySelector('.lr-check').textContent = entry.done ? '✅' : (i===G.itemIdx ? '👉' : '⬜');
+  });
+  updateProgress();
+}
+
+function updateProgress(){
+  const done = G.list.filter(e=>e.done).length;
+  const total = G.list.length;
+  const pct = total ? (done/total)*100 : 0;
+  $('list-progress-fill').style.width = pct + '%';
+  $('list-progress-label').textContent = `${done} / ${total} かんりょう`;
+}
+
+/* ══════════════════════════════════════════════
+   STAGE STEPS INDICATOR
+══════════════════════════════════════════════ */
+function setStepIndicator(active){
+  // active: 'corner'|'item'|'color'|'count'
+  const map = { corner:'ss-corner', item:'ss-item', color:'ss-item', count:'ss-count' };
+  const order = ['ss-corner','ss-item','ss-count'];
+  const activeEl = map[active] || 'ss-corner';
+  const activeIdx = order.indexOf(activeEl);
+  order.forEach((id,i) => {
+    const el = $(id);
+    if(!el) return;
+    el.className = 'sstep' + (i < activeIdx ? ' done' : i===activeIdx ? ' active' : '');
+  });
+}
+
+/* ══════════════════════════════════════════════
+   ITEM FLOW START
+══════════════════════════════════════════════ */
+function startItemFlow(){
+  if(G.itemIdx >= G.list.length){
+    stepCheckout();
+    return;
+  }
+  const entry = G.list[G.itemIdx];
+  updateListPanel();
+  $('current-item-display').textContent = entry.item.e;
+  $('stage-pill').textContent = `${G.itemIdx+1}つめ`;
+  stepCorner(entry);
+}
+
+/* ══════════════════════════════════════════════
+   STEP 1: CORNER SELECTION
+══════════════════════════════════════════════ */
+function stepCorner(entry){
+  G.step = 'corner';
+  clearScene();
+  setStepIndicator('corner');
+
+  const cfg = LV_CONFIG[G.lv];
+  say('🧒 こども',
+    `つぎは <span class="hl">「${entry.item.n}」</span>！ どの コーナーへ いけばいいかな？`);
+  charSay(`${entry.item.e} は どこに あるかな？`);
+
+  $('scene-label').textContent = '🏪 コーナーを えらぼう！';
+
+  // Build corner choices: correct + distractors
+  const correctCorner = CORNERS[entry.cornerKey];
+  const wrongCornerKeys = cfg.cornerKeys.filter(k=>k!==entry.cornerKey);
+  const wrongCorners = pick(wrongCornerKeys, Math.min(cfg.distractorCorners, wrongCornerKeys.length))
+    .map(k=>CORNERS[k]);
+  const choices = shuffle([correctCorner, ...wrongCorners]);
+
+  const grid = mkEl('div','choice-grid');
+  choices.forEach(corner => {
+    const card = mkEl('div','corner-card');
+    card.innerHTML = `<span class="cc-emoji">${corner.emoji}</span><div class="cc-name">${corner.label}</div><div class="cc-sub">${corner.sub}</div>`;
+    card.onclick = () => {
+      if(corner === correctCorner){
+        card.classList.add('correct');
+        addScore(cfg.pts.corner);
+        charSay(`そう！ ${correctCorner.label} だね！`);
+        setTimeout(()=>stepItem(entry), 700);
+      } else {
+        card.classList.add('wrong');
+        setTimeout(()=>card.classList.remove('wrong'), 550);
+        charSay(`ちがうよ！ ${entry.item.n} は どこかな？`);
+      }
+    };
+    grid.appendChild(card);
+  });
+  $('scene-body').appendChild(grid);
+
+  setTeacher([
+    [`${entry.item.e} ヒント`, ()=>charSay(`「${entry.item.n}」は ${correctCorner.sub}コーナー！`)],
+    ['👆 コーナーを さす', ()=>say('👨‍🏫 せんせい', `${correctCorner.label} へ いきましょう！ ${correctCorner.emoji}`)],
+    ['🔄 もういちど', ()=>stepCorner(entry)],
+  ]);
+}
+
+/* ══════════════════════════════════════════════
+   STEP 2: ITEM SELECTION
+══════════════════════════════════════════════ */
+function stepItem(entry){
+  G.step = 'item';
+  clearScene();
+  setStepIndicator('item');
+
+  const cfg = LV_CONFIG[G.lv];
+  const corner = CORNERS[entry.cornerKey];
+  // drinks use fruit emojis for juice → show name so kids can distinguish
+  const showName = (entry.cornerKey === 'drink');
+
+  say('🧒 こども',
+    `${corner.label} に きたよ！ <span class="hl">「${entry.item.n}」</span> を みつけよう！`);
+  charSay(`${entry.item.e} は どれ？`);
+
+  $('scene-label').textContent = `${corner.emoji} ${corner.label}`;
+
+  // Distractor items: from same corner
+  const wrongItems = pick(corner.items.filter(i=>i.n!==entry.item.n),
+    Math.min(cfg.distractorItems - 1, corner.items.length - 1));
+  const choices = shuffle([entry.item, ...wrongItems]);
+
+  const grid = mkEl('div','choice-grid');
+  choices.forEach(item => {
+    const card = mkEl('div','item-card');
+    // Show name label only for drink corner
+    card.innerHTML = `<span class="ic-emoji">${item.e}</span><div class="ic-name" style="${showName ? 'display:block;font-size:.82rem;font-weight:900;color:#444;margin-top:5px' : 'display:none'}">${item.n}</div>`;
+    card.onclick = () => {
+      if(item.n === entry.item.n){
+        card.classList.add('correct');
+        addScore(cfg.pts.item);
+        charSay(`そう！ ${item.n}！`);
+        // Next: color quiz only if colorOk flag is true AND level 2+
+        setTimeout(()=>{
+          if(cfg.includeColor && entry.item.colorOk){
+            stepColor(entry);
+          } else {
+            stepCount(entry);
+          }
+        }, 600);
+      } else {
+        card.classList.add('wrong');
+        setTimeout(()=>card.classList.remove('wrong'), 550);
+        charSay(`ちがうよ！ ${entry.item.n} を さがして！`);
+      }
+    };
+    grid.appendChild(card);
+  });
+  $('scene-body').appendChild(grid);
+
+  setTeacher([
+    [`${entry.item.e} ヒント`, ()=>charSay(`「${entry.item.n}」は ${entry.item.c}いろ！`)],
+    ['☝️ さして みせる', ()=>say('👨‍🏫 せんせい', `これが「${entry.item.n}」！ ${entry.item.e}`)],
+    ['🔄 もういちど', ()=>stepItem(entry)],
+  ]);
+}
+
+/* ══════════════════════════════════════════════
+   STEP 2b: COLOR (Lv2+, between item and count)
+══════════════════════════════════════════════ */
+function stepColor(entry){
+  G.step = 'color';
+  clearScene();
+  setStepIndicator('item');  // still between item and count
+
+  const cfg = LV_CONFIG[G.lv];
+  const correctColor = COLORS.find(c=>c.n===entry.item.c) || COLORS[0];
+  say('🧒 こども',
+    `${entry.item.e} は <span class="hl">なんいろ</span>かな？`);
+  charSay(`${entry.item.n} の いろは？`);
+
+  $('scene-label').textContent = `🎨 いろを えらぼう！`;
+
+  // Big item display
+  const bigItem = mkEl('div','');
+  bigItem.style.cssText='font-size:5rem;text-align:center;margin-bottom:4px';
+  bigItem.textContent = entry.item.e;
+  $('scene-body').appendChild(bigItem);
+
+  // Color choices: correct + wrong
+  const numWrong = G.lv===2 ? 3 : 4;
+  const wrongColors = shuffle(COLORS.filter(c=>c.n!==correctColor.n)).slice(0,numWrong);
+  const colorChoices = shuffle([correctColor, ...wrongColors]);
+
+  const cg = mkEl('div','color-grid');
+  colorChoices.forEach(col => {
+    const wrap = mkEl('div','color-opt');
+    const circle = mkEl('div','color-circle');
+    circle.style.background = col.h;
+    circle.style.color = col.n==='しろ'?'#aaa':'white';
+    circle.textContent = col.e;
+    const lbl = mkEl('div','color-label');
+    lbl.textContent = col.n;
+    wrap.appendChild(circle); wrap.appendChild(lbl);
+
+    circle.onclick = () => {
+      document.querySelectorAll('.color-circle').forEach(c=>c.classList.remove('sel'));
+      if(col.n === correctColor.n){
+        circle.classList.add('sel');
+        addScore(cfg.pts.color);
+        charSay(`そう！ ${correctColor.n}！`);
+        setTimeout(()=>stepCount(entry), 600);
+      } else {
+        charSay(`ちがうよ！ ${entry.item.n} は なんいろ？`);
+        setTimeout(()=>circle.classList.remove('sel'), 700);
+      }
+    };
+    cg.appendChild(wrap);
+  });
+  $('scene-body').appendChild(cg);
+
+  setTeacher([
+    ['🌈 いろカード みせる', ()=>say('👨‍🏫 せんせい',`${correctColor.n}いろ！ ${correctColor.e}`)],
+    [`${entry.item.e} を みせる`, ()=>charSay(`${entry.item.n} の いろを よく みて！`)],
+    ['💡 ヒント', ()=>charSay(`${correctColor.n}いろ は どれ？`)],
+  ]);
+}
+
+/* ══════════════════════════════════════════════
+   STEP 3: DRAG & DROP COUNT
+══════════════════════════════════════════════ */
+function stepCount(entry){
+  G.step = 'count';
+  clearScene();
+  setStepIndicator('count');
+
+  const cfg    = LV_CONFIG[G.lv];
+  const target = entry.qty;
+  const numWords = ['','いっこ','ふたつ','みっつ','よっつ','いつつ','むっつ','ななつ'];
+
+  say('🧒 こども',
+    `${entry.item.e} を <span class="hl">${target}こ</span> かごに ドラッグして いれよう！`);
+  charSay(`かごに ${target}こ いれてね！`);
+  $('scene-label').textContent = `🛒 かごに いれよう！`;
+
+  // ── Build UI ──────────────────────────────
+  const stage = mkEl('div','');
+  stage.id = 'dnd-stage';
+
+  // Counter display
+  const counter = mkEl('div','');
+  counter.id = 'dnd-counter';
+  counter.innerHTML = `
+    かごの なかみ：<span class="dc-current" id="dc-cur">0</span>
+    ／ <span class="dc-target">${target}</span>こ
+  `;
+  stage.appendChild(counter);
+
+  // Shelf (source items) — show target+3 copies to pick from
+  const shelfCount = Math.min(target + 3, 10);
+  const shelf = mkEl('div','');
+  shelf.id = 'dnd-shelf';
+  const shelfInner = mkEl('div','');
+  shelfInner.id = 'dnd-shelf-inner';
+  for(let i = 0; i < shelfCount; i++){
+    const si = mkEl('div','shelf-item');
+    si.dataset.idx = i;
+    si.innerHTML = `<span class="si-emoji">${entry.item.e}</span><span class="si-num">${i+1}こめ</span>`;
+    shelfInner.appendChild(si);
+  }
+  shelf.appendChild(shelfInner);
+  stage.appendChild(shelf);
+
+  // Basket (drop zone)
+  const basket = mkEl('div','');
+  basket.id = 'dnd-basket';
+  basket.innerHTML = `
+    <div id="dnd-basket-label">
+      🛒 ここに ドラッグ！
+      <span class="basket-arrow">⬇️</span>
+    </div>
+    <div id="dnd-basket-items"></div>
+  `;
+  stage.appendChild(basket);
+
+  // Controls row (remove + confirm)
+  const ctrlRow = mkEl('div','');
+  ctrlRow.style.cssText = 'display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;';
+
+  const removeBtn = mkEl('button','');
+  removeBtn.id = 'dnd-remove';
+  removeBtn.className = 'hidden';
+  removeBtn.textContent = '← ひとつ もどす';
+
+  const confirmBtn = mkEl('button','');
+  confirmBtn.id = 'dnd-confirm';
+  confirmBtn.textContent = `✅ ${target}こ かごに いれた！`;
+
+  ctrlRow.appendChild(removeBtn);
+  ctrlRow.appendChild(confirmBtn);
+  stage.appendChild(ctrlRow);
+
+  $('scene-body').appendChild(stage);
+
+  // Ghost element
+  let ghost = document.getElementById('drag-ghost');
+  if(!ghost){
+    ghost = document.createElement('div');
+    ghost.id = 'drag-ghost';
+    document.body.appendChild(ghost);
+  }
+  ghost.textContent = entry.item.e;
+
+  // ── State ─────────────────────────────────
+  let inBasket = 0;
+  let dragging  = null; // the shelf-item being dragged
+  let dragSrc   = null; // original shelf item el
+
+  function updateCounter(){
+    document.getElementById('dc-cur').textContent = inBasket;
+    const rb = document.getElementById('dnd-remove');
+    rb.className = inBasket > 0 ? '' : 'hidden';
+    const cb = document.getElementById('dnd-confirm');
+    if(inBasket === target){
+      cb.className = 'ready';
+    } else {
+      cb.className = '';
+    }
+  }
+
+  function addToBasket(){
+    inBasket++;
+    const bi = mkEl('div','basket-dropped');
+    bi.dataset.bidx = inBasket;
+    bi.textContent = entry.item.e;
+    document.getElementById('dnd-basket-items').appendChild(bi);
+    updateCounter();
+    if(inBasket === target){
+      document.getElementById('dnd-basket').classList.add('basket-success');
+      charSay(`${numWords[target]||target+'こ'}！ ぴったり！🎉`);
+    }
+  }
+
+  function removeFromBasket(){
+    if(inBasket <= 0) return;
+    const items = document.getElementById('dnd-basket-items').children;
+    if(items.length > 0){
+      document.getElementById('dnd-basket-items').removeChild(items[items.length-1]);
+    }
+    inBasket--;
+    document.getElementById('dnd-basket').classList.remove('basket-success','too-many');
+    updateCounter();
+    charSay('もういちど ためして！');
+  }
+
+  function tooMany(){
+    const b = document.getElementById('dnd-basket');
+    b.classList.remove('too-many');
+    void b.offsetWidth; // reflow
+    b.classList.add('too-many');
+    charSay(`${target}こで ちょうど OK！ いれすぎだよ！`);
+    setTimeout(()=>b.classList.remove('too-many'), 500);
+  }
+
+  // ── POINTER EVENTS (mouse + touch) ────────
+  function onPointerDown(e){
+    if(dragging) return;
+    dragSrc = e.currentTarget;
+    if(dragSrc.classList.contains('used')) return;
+    dragging = dragSrc;
+    dragging.classList.add('dragging');
+
+    ghost.style.display = 'block';
+    moveGhost(e);
+    e.preventDefault();
+  }
+
+  function onPointerMove(e){
+    if(!dragging) return;
+    moveGhost(e);
+    e.preventDefault();
+
+    // Highlight basket when hovering over it
+    const bRect = document.getElementById('dnd-basket').getBoundingClientRect();
+    const pt = getPoint(e);
+    const over = pt.x >= bRect.left && pt.x <= bRect.right &&
+                 pt.y >= bRect.top  && pt.y <= bRect.bottom;
+    document.getElementById('dnd-basket').classList.toggle('drag-over', over);
+  }
+
+  function onPointerUp(e){
+    if(!dragging) return;
+    ghost.style.display = 'none';
+    document.getElementById('dnd-basket').classList.remove('drag-over');
+
+    const bRect = document.getElementById('dnd-basket').getBoundingClientRect();
+    const pt = getPoint(e);
+    const dropped = pt.x >= bRect.left && pt.x <= bRect.right &&
+                    pt.y >= bRect.top  && pt.y <= bRect.bottom;
+
+    if(dropped){
+      if(inBasket >= target){
+        tooMany();
+      } else {
+        dragging.classList.add('used');
+        addToBasket();
+      }
+    }
+    dragging.classList.remove('dragging');
+    dragging = null;
+    dragSrc  = null;
+    e.preventDefault();
+  }
+
+  function moveGhost(e){
+    const pt = getPoint(e);
+    ghost.style.left = pt.x + 'px';
+    ghost.style.top  = pt.y + 'px';
+  }
+
+  function getPoint(e){
+    if(e.touches && e.touches.length > 0){
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+    if(e.changedTouches && e.changedTouches.length > 0){
+      return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+    }
+    return { x: e.clientX, y: e.clientY };
+  }
+
+  // Attach events to all shelf items
+  document.querySelectorAll('.shelf-item').forEach(si => {
+    si.addEventListener('pointerdown', onPointerDown, {passive:false});
+  });
+  window.addEventListener('pointermove', onPointerMove, {passive:false});
+  window.addEventListener('pointerup',   onPointerUp,   {passive:false});
+
+  // Remove button
+  removeBtn.onclick = removeFromBasket;
+
+  // Confirm button
+  confirmBtn.onclick = () => {
+    if(inBasket !== target){
+      tooMany();
+      return;
+    }
+    // Clean up global listeners
+    window.removeEventListener('pointermove', onPointerMove);
+    window.removeEventListener('pointerup',   onPointerUp);
+    ghost.style.display = 'none';
+
+    addScore(cfg.pts.count);
+    entry.done = true;
+    updateListPanel();
+    charSay(`${numWords[target]||target+'こ'}！ ぴったり！🎉`);
+
+    setTimeout(()=>{
+      showReward({
+        big: entry.item.e,
+        title: `${entry.item.n} × ${target} GET！`,
+        pts: 0,
+        msg: `かごに いれられたよ！🛒 じょうず！`,
+      }, ()=>{
+        G.itemIdx++;
+        startItemFlow();
+      });
+    }, 500);
+  };
+
+  // Teacher buttons
+  setTeacher([
+    ['☝️ いっしょに かぞえる', ()=>{
+      charSay('いーち、にー、さーん…');
+      say('👨‍🏫 せんせい', `${target}こ だよ！ いっしょに かぞえよう！`);
+    }],
+    ['💡 こすう ヒント', ()=>charSay(`${target}こ！ ${target}つ ドラッグしてね！`)],
+    ['🔄 もういちど', ()=>{
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      ghost.style.display = 'none';
+      stepCount(entry);
+    }],
+  ]);
+}
+
+/* ══════════════════════════════════════════════
+   CHECKOUT STEP
+══════════════════════════════════════════════ */
+function stepCheckout(){
+  G.step = 'checkout';
+  clearScene();
+
+  const cfg = LV_CONFIG[G.lv];
+  $('current-item-display').textContent = '🧾';
+  $('stage-pill').textContent = 'レジ';
+  setStepIndicator('count');
+
+  say('📢 ナレーター', 'ぜんぶ かごに はいったよ！ レジへ いって こえを かけよう！');
+  charSay('レジへ いこう！💨');
+
+  $('scene-label').textContent = '🛒 レジへ いこう！';
+
+  // Show basket contents
+  const basketEl = mkEl('div','checkout-basket');
+  const lbl = mkEl('div','checkout-basket-label');
+  lbl.textContent = '🛒 かごの なかみ';
+  basketEl.appendChild(lbl);
+  G.list.forEach(entry=>{
+    const chip = mkEl('div','basket-chip');
+    chip.innerHTML = `${entry.item.e}<span class="bc-qty">×${entry.qty}</span>`;
+    basketEl.appendChild(chip);
+  });
+  $('scene-body').appendChild(basketEl);
+
+  // Say buttons
+  let saidCount = 0;
+  const sayBox = mkEl('div','');
+  sayBox.style.width='100%';
+
+  const numWords = ['','いっこ','ふたつ','みっつ','よっつ','いつつ','むっつ','ななつ'];
+  G.list.forEach((entry, i)=>{
+    const qty = numWords[entry.qty] || `${entry.qty}こ`;
+    const btn = mkEl('button','say-btn');
+    btn.innerHTML = `🗣️ 「${entry.item.n}、${qty}」`;
+    btn.id = `say-btn-${i}`;
+    btn.onclick = ()=>{
+      if(btn.classList.contains('said')) return;
+      btn.classList.add('said');
+      btn.innerHTML = `✅ 「${entry.item.n}、${qty}」 じょうず！`;
+      addScore(cfg.pts.say);
+      charSay('じょうず！！👏');
+      saidCount++;
+      if(saidCount === G.list.length){
+        setTimeout(()=>stepRoundClear(), 600);
+      }
+    };
+    sayBox.appendChild(btn);
+  });
+
+  // Or skip button
+  const skipBtn = mkEl('button','btn btn-blue');
+  skipBtn.style.marginTop='8px';
+  skipBtn.textContent='▶ かいわ スキップ';
+  skipBtn.onclick = ()=>stepRoundClear();
+  sayBox.appendChild(skipBtn);
+
+  $('scene-body').appendChild(sayBox);
+
+  setTeacher([
+    ['💰 おかねを ください', ()=>say('👨‍🏫 せんせい','おかねを どうぞ！💰')],
+    ['🧾 レシート わたす', ()=>say('👨‍🏫 せんせい','レシート どうぞ！🧾')],
+    ['🛒 かごを あげる', ()=>say('👨‍🏫 せんせい','ジャーン！ これ ぜんぶ！🛒')],
+    ['👏 じょうず！', ()=>charSay('すごく じょうず！！ 👏')],
+  ]);
+}
+
+/* ══════════════════════════════════════════════
+   ROUND CLEAR
+══════════════════════════════════════════════ */
+function stepRoundClear(){
+  G.step = 'roundclear';
+  clearScene();
+
+  $('current-item-display').textContent = '🏅';
+  $('stage-pill').textContent = 'クリア！';
+
+  say('📢 ナレーター', `ラウンド ${G.round} の おつかい だいせいこう！！🎉`);
+  charSay('やったー！！🎉');
+
+  $('scene-label').textContent = `🏅 ラウンド ${G.round} クリア！`;
+
+  // Summary
+  const sumBox = mkEl('div','');
+  sumBox.style.cssText='text-align:center;font-size:2.5rem;letter-spacing:6px;margin:4px 0 12px';
+  sumBox.textContent = G.list.map(e=>e.item.e).join(' ');
+  $('scene-body').appendChild(sumBox);
+
+  const row = mkEl('div','');
+  row.style.cssText='display:flex;gap:12px;flex-wrap:wrap;justify-content:center';
+
+  const nextBtn = mkEl('button','btn btn-teal');
+  nextBtn.innerHTML='🔄 つぎの おつかい！';
+  nextBtn.onclick=()=>nextRound();
+
+  const endBtn = mkEl('button','btn btn-yellow');
+  endBtn.innerHTML='🏆 おわる';
+  endBtn.onclick=()=>showMissionClear();
+
+  row.appendChild(nextBtn); row.appendChild(endBtn);
+  $('scene-body').appendChild(row);
+
+  setTeacher([
+    ['🎉 クラッカー！', ()=>{spawnConfetti();say('👨‍🏫 せんせい','パンパカパーン！🎊');}],
+    ['💝 シールを あげる', ()=>say('👨‍🏫 せんせい','シール どうぞ！💝')],
+    ['🏆 トロフィー！', ()=>charSay('トロフィーを あげる！🏆')],
+    ['📋 リストを かくにん', ()=>say('👨‍🏫 せんせい','ぜんぶ できたね！ かくにん しよう！')],
+  ]);
+
+  // Show reward first
+  showReward({
+    big:'🏅', title:`ラウンド ${G.round} クリア！`,
+    pts:0, msg:`ぜんぶ かえたよ！ すごい！🛒✨`
+  }, null);
+  spawnConfetti();
+}
+
+/* ══════════════════════════════════════════════
+   NEXT ROUND
+══════════════════════════════════════════════ */
+function nextRound(){
+  G.round++;
+  buildRound();
+}
+
+/* ══════════════════════════════════════════════
+   REWARD POPUP
+══════════════════════════════════════════════ */
+function showReward({big,title,pts,msg}, nextFn){
+  G.rewardNext = nextFn;
+  if(pts > 0) addScore(pts);
+
+  $('rw-big').textContent = big;
+  $('rw-title').textContent = title;
+  $('rw-pts').textContent   = pts > 0 ? `⭐ +${pts} てん！` : '';
+  $('rw-msg').textContent   = msg;
+
+  const nextBtn = $('rw-next-btn');
+  nextBtn.textContent = nextFn ? 'つぎへ！ →' : 'とじる ✕';
+
+  $('reward-popup').classList.add('show');
+}
+
+function rewardNext(){
+  $('reward-popup').classList.remove('show');
+  if(G.rewardNext) G.rewardNext();
+}
+
+/* ══════════════════════════════════════════════
+   MISSION CLEAR
+══════════════════════════════════════════════ */
+function showMissionClear(){
+  $('mc-score-num').textContent = G.score;
+
+  const summary = $('mc-summary');
+  summary.innerHTML = `<h4>📋 かったもの</h4>`;
+  G.list.forEach(entry=>{
+    const row = mkEl('div','mc-item-row');
+    row.innerHTML = `<span>${entry.item.e}</span><span>${entry.item.n}</span><span style="color:#aaa;font-size:.85rem">× ${entry.qty}こ</span>`;
+    summary.appendChild(row);
+  });
+
+  setScreen('screen-clear');
+  spawnConfetti();
+  setTimeout(spawnConfetti, 800);
+  setTimeout(spawnConfetti, 1600);
+}
+
+function goTitle(){
+  closeHomeDialog();
+  $('memo-overlay').classList.remove('show');
+  setScreen('screen-title');
+}
+function replayGame(){
+  G.round=1; G.score=0;
+  setScreen('screen-game');
+  buildRound();
+}
+
+/* ══════════════════════════════════════════════
+   HOME CONFIRM DIALOG
+══════════════════════════════════════════════ */
+function confirmGoHome(){
+  $('home-dialog').classList.add('show');
+}
+function closeHomeDialog(){
+  $('home-dialog').classList.remove('show');
+}
+// Close on backdrop click
+document.addEventListener('DOMContentLoaded', ()=>{
+  $('home-dialog').addEventListener('click', e=>{
+    if(e.target === $('home-dialog')) closeHomeDialog();
+  });
+});
+
+/* ══════════════════════════════════════════════
+   MEMO OVERLAY
+══════════════════════════════════════════════ */
+function showMemo(){
+  const lines = $('memo-lines');
+  lines.innerHTML = '';
+  G.list.forEach((entry, i) => {
+    const line = mkEl('div','memo-line');
+    line.style.animationDelay = (i * 0.08) + 's';
+    line.innerHTML = `
+      <span class="ml-check">□</span>
+      <span class="ml-emoji">${entry.item.e}</span>
+      <span class="ml-text">${entry.item.n}</span>
+      <span class="ml-qty">${entry.qty}こ</span>
+    `;
+    lines.appendChild(line);
+  });
+  $('memo-overlay').classList.add('show');
+}
+
+function closeMemoAndStart(){
+  $('memo-overlay').classList.remove('show');
+  startItemFlow();
+}
+
+/* ══════════════════════════════════════════════
+   TEACHER PANEL
+══════════════════════════════════════════════ */
+function setTeacher(actions){
+  const panel = $('teacher-panel');
+  const btns  = $('t-btns');
+  btns.innerHTML = '';
+  if(!G.teacherOn){ panel.style.display='none'; return; }
+  panel.style.display='flex';
+  actions.forEach(([label,fn])=>{
+    const b = mkEl('button','t-btn');
+    b.textContent = label;
+    b.onclick = ()=>{
+      fn();
+      b.classList.add('flash');
+      setTimeout(()=>b.classList.remove('flash'), 1600);
+    };
+    btns.appendChild(b);
+  });
+}
+
+function toggleTeacher(){
+  G.teacherOn = !G.teacherOn;
+  const btn = $('t-toggle');
+  btn.textContent = `👨‍🏫 先生モード: ${G.teacherOn?'ON':'OFF'}`;
+  const panel = $('teacher-panel');
+  if(panel) panel.style.display = G.teacherOn?'flex':'none';
+}
+
+/* ══════════════════════════════════════════════
+   CONFETTI
+══════════════════════════════════════════════ */
+function spawnConfetti(){
+  const cols=['#FFD54F','#F48FB1','#CE93D8','#80DEEA','#A5D6A7','#FF8A65','#EF5350','#64B5F6','#FFE082'];
+  for(let i=0;i<56;i++){
+    const c=document.createElement('div');
+    c.className='cfp';
+    c.style.left=Math.random()*100+'vw';
+    c.style.top='-22px';
+    c.style.background=rnd(cols);
+    c.style.animationDelay=Math.random()*1.3+'s';
+    c.style.animationDuration=(1.4+Math.random()*1.2)+'s';
+    c.style.width=(6+Math.random()*9)+'px';
+    c.style.height=(6+Math.random()*9)+'px';
+    c.style.borderRadius=Math.random()>.5?'50%':'3px';
+    c.style.transform=`rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),3800);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   DOM HELPER
+══════════════════════════════════════════════ */
+function mkEl(tag, cls){
+  const e=document.createElement(tag);
+  if(cls) e.className=cls;
+  return e;
+}
+</script>
+</body>
+</html>
