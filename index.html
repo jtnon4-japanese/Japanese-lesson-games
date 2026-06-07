@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教材一覧</title>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Kaisei+Tokumin:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #fdf6f0;
+      --surface: #fffaf7;
+      --accent: #f4a7b9;
+      --accent2: #a8d8c8;
+      --accent3: #b5c8f0;
+      --text: #5a4a5a;
+      --text-muted: #b09aaa;
+      --shadow: rgba(180, 140, 160, 0.15);
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Zen Maru Gothic', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Blobs */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(72px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .blob-1 {
+      width: 440px; height: 440px;
+      background: rgba(244, 167, 185, 0.28);
+      top: -100px; left: -120px;
+      animation: drift 10s ease-in-out infinite alternate;
+    }
+    .blob-2 {
+      width: 380px; height: 380px;
+      background: rgba(168, 216, 200, 0.24);
+      bottom: -80px; right: -100px;
+      animation: drift 13s ease-in-out infinite alternate-reverse;
+    }
+    .blob-3 {
+      width: 280px; height: 280px;
+      background: rgba(181, 200, 240, 0.22);
+      top: 45%; left: 58%;
+      animation: drift 9s ease-in-out infinite alternate;
+    }
+    @keyframes drift {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(20px,14px) scale(1.05); }
+    }
+
+    /* Dot pattern */
+    .dots {
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(180,140,160,0.1) 1.5px, transparent 1.5px);
+      background-size: 30px 30px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Floating shapes */
+    .shape { position: fixed; pointer-events: none; z-index: 0; }
+    .shape-1 {
+      top: 14%; right: 9%;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 2px solid rgba(244,167,185,0.45);
+      animation: float 6s ease-in-out infinite;
+    }
+    .shape-2 {
+      bottom: 18%; left: 7%;
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      background: rgba(168,216,200,0.35);
+      transform: rotate(20deg);
+      animation: float 8s ease-in-out infinite reverse;
+    }
+    .shape-3 {
+      top: 62%; right: 5%;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: rgba(181,200,240,0.45);
+      animation: float 7s ease-in-out infinite 1s;
+    }
+    .shape-4 {
+      top: 20%; left: 6%;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: rgba(244,167,185,0.4);
+      animation: float 5s ease-in-out infinite 0.5s;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-14px); }
+    }
+
+    /* Main container */
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 48px;
+    }
+
+    /* Header */
+    .header { text-align: center; }
+
+    .label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.1s forwards;
+    }
+    .label::before, .label::after {
+      content: '';
+      width: 24px; height: 1px;
+      background: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    .title {
+      font-family: 'Kaisei Tokumin', serif;
+      font-size: clamp(44px, 7vw, 80px);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--text);
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.2s forwards;
+    }
+    .title .highlight {
+      position: relative;
+      display: inline-block;
+    }
+    .title .highlight::after {
+      content: '';
+      position: absolute;
+      bottom: 4px; left: -2px; right: -2px;
+      height: 12px;
+      background: linear-gradient(90deg, rgba(244,167,185,0.4), rgba(181,200,240,0.35));
+      border-radius: 6px;
+      z-index: -1;
+    }
+
+    .subtitle {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+      letter-spacing: 0.14em;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.35s forwards;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      animation: fadeIn 0.6s ease 0.5s forwards;
+    }
+    .divider-line {
+      width: 36px; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(244,167,185,0.6));
+    }
+    .divider-line.r {
+      background: linear-gradient(90deg, rgba(244,167,185,0.6), transparent);
+    }
+    .divider-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      opacity: 0.75;
+    }
+
+    /* Button */
+    .game-btn {
+      text-decoration: none;
+      opacity: 0;
+      animation: fadeUp 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.65s forwards;
+    }
+
+    .btn-body {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 30px 48px;
+      background: var(--surface);
+      border-radius: 28px;
+      border: 2px solid rgba(244,167,185,0.25);
+      box-shadow:
+        0 6px 32px rgba(244,167,185,0.18),
+        0 2px 8px rgba(180,140,160,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.95);
+      transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      cursor: pointer;
+    }
+
+    .game-btn:hover .btn-body {
+      transform: translateY(-6px) scale(1.025);
+      border-color: rgba(244,167,185,0.55);
+      box-shadow:
+        0 16px 48px rgba(244,167,185,0.28),
+        0 6px 16px rgba(180,140,160,0.12),
+        inset 0 1px 0 rgba(255,255,255,0.95);
+    }
+
+    /* Badge */
+    .btn-badge {
+      position: absolute;
+      top: -13px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #f4a7b9, #f9c8d4);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      padding: 4px 16px;
+      border-radius: 99px;
+      white-space: nowrap;
+      box-shadow: 0 3px 10px rgba(244,167,185,0.45);
+    }
+
+    .btn-icon {
+      font-size: 38px;
+      line-height: 1;
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      filter: drop-shadow(0 2px 6px rgba(244,167,185,0.3));
+    }
+    .game-btn:hover .btn-icon {
+      transform: scale(1.2) rotate(-8deg);
+    }
+
+    .btn-text {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .btn-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.04em;
+      transition: color 0.3s ease;
+    }
+    .game-btn:hover .btn-name { color: #c4607a; }
+
+    .btn-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+    }
+
+    .btn-arrow {
+      margin-left: 8px;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(244,167,185,0.15), rgba(181,200,240,0.15));
+      border: 1.5px solid rgba(244,167,185,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      color: var(--accent);
+      transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .game-btn:hover .btn-arrow {
+      background: linear-gradient(135deg, #f4a7b9, #f9c8d4);
+      border-color: transparent;
+      color: white;
+      transform: translateX(5px);
+      box-shadow: 0 4px 12px rgba(244,167,185,0.4);
+    }
+
+    /* Footer */
+    .footer {
+      position: fixed;
+      bottom: 24px;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.16em;
+      opacity: 0;
+      animation: fadeIn 1s ease 1.3s forwards;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="dots"></div>
+
+  <div class="shape shape-1"></div>
+  <div class="shape shape-2"></div>
+  <div class="shape shape-3"></div>
+  <div class="shape shape-4"></div>
+
+  <div class="container">
+    <div class="header">
+      <div class="label">ゲーム教材</div>
+      <h1 class="title"><span class="highlight">教材</span>一覧</h1>
+      <p class="subtitle">Game Collection</p>
+    </div>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <div class="divider-dot"></div>
+      <div class="divider-line r"></div>
+    </div>
+
+    <a class="game-btn" href="shopping/">
+      <div class="btn-body">
+        <div class="btn-badge">No. 01</div>
+        <span class="btn-icon">🛒</span>
+        <div class="btn-text">
+          <span class="btn-name">Shopping Game</span>
+          <span class="btn-desc">shopping/</span>
+        </div>
+        <div class="btn-arrow">→</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="footer">教材一覧 · Game Collection</div>
+
+</body>
+</html>
