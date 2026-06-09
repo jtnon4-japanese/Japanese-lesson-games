@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>にほんごショッピング 🛍️</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Nunito:wght@700;900&display=swap');
+
+  :root {
+    --cream: #FFF8F0;
+    --warm-white: #FFFCF8;
+    --coral: #FF6B6B;
+    --coral-light: #FFE8E8;
+    --teal: #4ECDC4;
+    --teal-dark: #3AB5AC;
+    --yellow: #FFD93D;
+    --yellow-dark: #E8C200;
+    --purple: #C77DFF;
+    --purple-dark: #A855F7;
+    --navy: #2D3561;
+    --gray: #8A8FA8;
+    --gray-light: #F0F2F8;
+    --shadow: 0 4px 20px rgba(45,53,97,0.10);
+    --shadow-hover: 0 8px 32px rgba(45,53,97,0.18);
+    --radius: 20px;
+    --radius-sm: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--cream);
+    color: var(--navy);
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: var(--navy);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(45,53,97,0.25);
+  }
+  .logo {
+    font-family: 'Nunito', 'Noto Sans JP', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo span { color: var(--yellow); }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .home-btn {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 8px 16px;
+    font-size: .85rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background .15s;
+  }
+  .home-btn:hover { background: rgba(255,255,255,0.25); }
+  .cart-btn {
+    background: var(--coral);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 22px;
+    font-size: 1rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform .15s, background .15s;
+  }
+  .cart-btn:hover { background: #e55; transform: scale(1.04); }
+  .cart-count {
+    background: var(--yellow);
+    color: var(--navy);
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    font-weight: 900;
+  }
+
+  /* ===== MAIN SCREENS ===== */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ===== STORE SELECT ===== */
+  #screen-select {
+    padding: 40px 24px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .greeting {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .greeting h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .greeting .sub {
+    font-size: 1rem;
+    color: var(--gray);
+    background: var(--yellow);
+    display: inline-block;
+    padding: 4px 18px;
+    border-radius: 50px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-top: 6px;
+  }
+  .store-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+  }
+  .store-card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 32px 20px 24px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform .2s, box-shadow .2s;
+    border: 3px solid transparent;
+  }
+  .store-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--teal);
+  }
+  .store-icon { font-size: 3.2rem; margin-bottom: 12px; }
+  .store-name-jp { font-size: 1.2rem; font-weight: 900; color: var(--navy); }
+  .store-name-en { font-size: .78rem; color: var(--gray); margin-top: 2px; }
+
+  /* ===== SHOP INTERIOR ===== */
+  #screen-shop { padding: 24px; max-width: 1100px; margin: 0 auto; }
+  .shop-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 18px 24px;
+    box-shadow: var(--shadow);
+  }
+  .back-btn {
+    background: var(--gray-light);
+    border: none;
+    border-radius: 50px;
+    padding: 8px 18px;
+    font-size: .9rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--navy);
+    transition: background .15s;
+  }
+  .back-btn:hover { background: #dde; }
+  .shop-title { font-size: 1.5rem; font-weight: 900; }
+  .shop-subtitle { font-size: .85rem; color: var(--gray); margin-top: 2px; }
+
+  .items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 18px;
+  }
+  .item-card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 18px 14px 16px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    position: relative;
+    transition: transform .2s, box-shadow .2s;
+    border: 2px solid transparent;
+  }
+  .item-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+  .item-card.in-cart { border-color: var(--teal); }
+  .item-emoji { font-size: 3rem; margin-bottom: 10px; display: block; }
+  .item-name-jp { font-size: .95rem; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+  .item-name-en { font-size: .72rem; color: var(--gray); margin-bottom: 12px; }
+
+  .price-tag-btn {
+    background: var(--yellow);
+    border: none;
+    border-radius: 50px;
+    padding: 7px 16px;
+    font-size: .85rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0 auto 10px;
+    transition: background .15s, transform .1s;
+  }
+  .price-tag-btn:hover { background: var(--yellow-dark); transform: scale(1.04); }
+  .price-tag-btn.revealed { background: var(--coral); color: #fff; }
+
+  .price-bubble {
+    background: var(--coral-light);
+    border: 2px solid var(--coral);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    font-size: .9rem;
+    font-weight: 900;
+    color: var(--coral);
+    margin-bottom: 10px;
+    display: none;
+    animation: popIn .25s cubic-bezier(.3,1.4,.6,1) both;
+  }
+  .price-bubble.show { display: block; }
+  .price-bubble .question { font-size: .75rem; font-weight: 500; color: var(--gray); display: block; margin-bottom: 3px; }
+  .price-bubble .answer { font-size: 1.05rem; }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.7); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .add-cart-btn {
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 7px 16px;
+    font-size: .82rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    transition: background .15s, transform .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  .add-cart-btn:hover { background: var(--teal-dark); transform: scale(1.03); }
+  .add-cart-btn.added { background: var(--gray); cursor: default; }
+
+  .in-cart-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--teal);
+    color: #fff;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: .85rem;
+    font-weight: 900;
+  }
+  .item-card.in-cart .in-cart-badge { display: flex; }
+
+  /* ===== CART ===== */
+  #screen-cart { padding: 24px; max-width: 700px; margin: 0 auto; }
+  .cart-title {
+    font-size: 1.6rem;
+    font-weight: 900;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .cart-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--gray);
+  }
+  .cart-empty .big { font-size: 3rem; }
+  .cart-item-row {
+    background: #fff;
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+  }
+  .cart-item-emoji { font-size: 2rem; }
+  .cart-item-info { flex: 1; }
+  .cart-item-name { font-weight: 700; font-size: .95rem; }
+  .cart-item-price { color: var(--coral); font-weight: 700; font-size: .9rem; }
+  .remove-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--gray);
+    transition: color .15s;
+    padding: 4px 8px;
+  }
+  .remove-btn:hover { color: var(--coral); }
+
+  .cart-total-box {
+    background: var(--navy);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 20px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .total-label { font-size: 1rem; font-weight: 700; opacity: .8; }
+  .total-amount { font-size: 1.8rem; font-weight: 900; color: var(--yellow); }
+
+  .checkout-btn {
+    background: var(--coral);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 16px 32px;
+    font-size: 1.1rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 900;
+    cursor: pointer;
+    width: 100%;
+    transition: background .15s, transform .12s;
+    margin-bottom: 12px;
+  }
+  .checkout-btn:hover { background: #e55; transform: scale(1.02); }
+  .continue-btn {
+    background: var(--gray-light);
+    color: var(--navy);
+    border: none;
+    border-radius: 50px;
+    padding: 12px 32px;
+    font-size: .95rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    transition: background .15s;
+  }
+  .continue-btn:hover { background: #dde; }
+
+  /* ===== CHECKOUT ===== */
+  #screen-checkout { padding: 24px; max-width: 700px; margin: 0 auto; }
+  .checkout-title { font-size: 1.6rem; font-weight: 900; margin-bottom: 24px; }
+
+  .receipt-box {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+  }
+  .receipt-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--gray-light);
+    font-size: .9rem;
+  }
+  .receipt-item:last-of-type { border-bottom: none; }
+  .receipt-total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 2px solid var(--navy);
+    font-weight: 900;
+    font-size: 1.1rem;
+  }
+
+  .payment-section { margin-bottom: 24px; }
+  .payment-label { font-size: 1rem; font-weight: 900; margin-bottom: 14px; color: var(--navy); }
+  .payment-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .payment-option {
+    background: #fff;
+    border: 3px solid var(--gray-light);
+    border-radius: var(--radius-sm);
+    padding: 18px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .15s, transform .15s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  .payment-option:hover { border-color: var(--teal); transform: scale(1.03); }
+  .payment-option.selected { border-color: var(--teal); background: #E8FAF9; }
+  .payment-icon { font-size: 2rem; display: block; margin-bottom: 6px; }
+  .payment-name { font-size: .85rem; font-weight: 700; color: var(--navy); }
+  .payment-name-en { font-size: .7rem; color: var(--gray); }
+
+  .pay-btn {
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 16px 32px;
+    font-size: 1.1rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 900;
+    cursor: pointer;
+    width: 100%;
+    transition: background .15s, transform .12s;
+  }
+  .pay-btn:hover:not(:disabled) { background: var(--teal-dark); transform: scale(1.02); }
+  .pay-btn:disabled { background: var(--gray); cursor: not-allowed; }
+
+  /* ===== COMPLETE ===== */
+  #screen-complete { padding: 40px 24px; max-width: 600px; margin: 0 auto; text-align: center; }
+  .complete-icon { font-size: 5rem; margin-bottom: 20px; animation: bounce .5s cubic-bezier(.3,1.4,.6,1) both; }
+  @keyframes bounce { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: scale(1); } }
+  .complete-title { font-size: 2rem; font-weight: 900; margin-bottom: 10px; color: var(--teal-dark); }
+  .complete-msg { color: var(--gray); font-size: .95rem; line-height: 1.7; margin-bottom: 28px; }
+  .complete-phrase {
+    background: var(--navy);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    line-height: 1.8;
+    font-size: .95rem;
+  }
+  .complete-phrase .phrase-label { font-size: .75rem; opacity: .6; display: block; margin-bottom: 6px; }
+  .complete-phrase .phrase { font-size: 1.1rem; font-weight: 700; color: var(--yellow); }
+  .restart-btn {
+    background: var(--coral);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 36px;
+    font-size: 1rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 900;
+    cursor: pointer;
+    transition: background .15s, transform .12s;
+    margin-bottom: 12px;
+    width: 100%;
+  }
+  .restart-btn:hover { background: #e55; transform: scale(1.04); }
+  .home-link-btn {
+    background: var(--gray-light);
+    color: var(--navy);
+    border: none;
+    border-radius: 50px;
+    padding: 12px 36px;
+    font-size: .95rem;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    width: 100%;
+    transition: background .15s;
+  }
+  .home-link-btn:hover { background: #dde; }
+
+  /* Phrase hint box */
+  .phrase-hint {
+    background: var(--purple);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    padding: 10px 18px;
+    font-size: .82rem;
+    font-weight: 700;
+    text-align: center;
+    margin: 0 0 20px;
+    opacity: .92;
+  }
+  .phrase-hint span { color: var(--yellow); font-size: .95rem; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-left">
+    <a class="home-btn" href="../">← もどる</a>
+    <div class="logo">🛍️ <span>にほんご</span>ショッピング</div>
+  </div>
+  <button class="cart-btn" onclick="showCart()">
+    🛒 カート <span class="cart-count" id="cartCount">0</span>
+  </button>
+</header>
+
+<!-- SCREEN 1: STORE SELECT -->
+<div id="screen-select" class="screen active">
+  <div id="screen-select-inner" style="padding: 40px 24px; max-width: 900px; margin: 0 auto;">
+    <div class="greeting">
+      <h1>どのお店に入りますか？</h1>
+      <div class="sub">✨ お店を えらんで ください</div>
+    </div>
+    <div class="store-grid" id="storeGrid"></div>
+  </div>
+</div>
+
+<!-- SCREEN 2: SHOP -->
+<div id="screen-shop" class="screen">
+  <div style="padding: 24px; max-width: 1100px; margin: 0 auto;">
+    <div class="shop-header">
+      <div>
+        <button class="back-btn" onclick="goToSelect()">← もどる</button>
+      </div>
+      <div>
+        <div class="shop-title" id="shopTitle"></div>
+        <div class="shop-subtitle" id="shopSubtitle"></div>
+      </div>
+    </div>
+    <div class="phrase-hint">💬 値段を知りたいとき → <span>「いくらですか？」</span></div>
+    <div class="items-grid" id="itemsGrid"></div>
+  </div>
+</div>
+
+<!-- SCREEN 3: CART -->
+<div id="screen-cart" class="screen">
+  <div style="padding: 24px; max-width: 700px; margin: 0 auto;">
+    <div class="cart-title">🛒 カート</div>
+    <div id="cartContent"></div>
+  </div>
+</div>
+
+<!-- SCREEN 4: CHECKOUT -->
+<div id="screen-checkout" class="screen">
+  <div style="padding: 24px; max-width: 700px; margin: 0 auto;">
+    <div class="checkout-title">💳 お会計</div>
+    <div class="receipt-box" id="receiptBox"></div>
+    <div class="payment-section">
+      <div class="payment-label">💴 お支払い方法を えらんでください</div>
+      <div class="payment-options">
+        <div class="payment-option" onclick="selectPayment('cash')" id="pay-cash">
+          <span class="payment-icon">💴</span>
+          <div class="payment-name">現金</div>
+          <div class="payment-name-en">Cash</div>
+        </div>
+        <div class="payment-option" onclick="selectPayment('card')" id="pay-card">
+          <span class="payment-icon">💳</span>
+          <div class="payment-name">クレジットカード</div>
+          <div class="payment-name-en">Credit Card</div>
+        </div>
+        <div class="payment-option" onclick="selectPayment('paypay')" id="pay-paypay">
+          <span class="payment-icon">📱</span>
+          <div class="payment-name">PayPay</div>
+          <div class="payment-name-en">PayPay</div>
+        </div>
+      </div>
+    </div>
+    <button class="pay-btn" id="payBtn" onclick="completePurchase()" disabled>
+      お支払いを えらんでください
+    </button>
+  </div>
+</div>
+
+<!-- SCREEN 5: COMPLETE -->
+<div id="screen-complete" class="screen">
+  <div style="padding: 40px 24px; max-width: 600px; margin: 0 auto; text-align: center;">
+    <div class="complete-icon">🎉</div>
+    <div class="complete-title">ありがとうございました！</div>
+    <div class="complete-msg">お買い物 おつかれさまでした！<br>またきてくださいね。</div>
+    <div class="complete-phrase" id="completePhrase"></div>
+    <button class="restart-btn" onclick="restart()">🏪 もう一度あそぶ</button>
+    <a class="home-link-btn" href="../">🏠 教材一覧にもどる</a>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const STORES = [
+  { id: 'clothes', icon: '👗', nameJp: '服屋', nameEn: 'Clothing Store',
+    items: [
+      { id: 'c1', emoji: '👕', nameJp: '赤いTシャツ', nameEn: 'Red T-shirt', price: 1500 },
+      { id: 'c2', emoji: '👖', nameJp: 'デニムのパンツ', nameEn: 'Denim Pants', price: 4800 },
+      { id: 'c3', emoji: '🩱', nameJp: '黒いスカート', nameEn: 'Black Skirt', price: 3200 },
+      { id: 'c4', emoji: '🧥', nameJp: '白いコート', nameEn: 'White Coat', price: 12000 },
+      { id: 'c5', emoji: '🧣', nameJp: '青いマフラー', nameEn: 'Blue Scarf', price: 2400 },
+      { id: 'c6', emoji: '🧤', nameJp: '手袋', nameEn: 'Gloves', price: 980 },
+      { id: 'c7', emoji: '🩳', nameJp: '緑のショートパンツ', nameEn: 'Green Shorts', price: 2200 },
+      { id: 'c8', emoji: '👔', nameJp: 'シャツ', nameEn: 'Dress Shirt', price: 3500 },
+      { id: 'c9', emoji: '🧢', nameJp: '帽子', nameEn: 'Cap', price: 1800 },
+      { id: 'c10', emoji: '🩲', nameJp: 'パジャマ', nameEn: 'Pajamas', price: 2800 },
+    ]
+  },
+  { id: 'shoes', icon: '👟', nameJp: '靴屋', nameEn: 'Shoe Store',
+    items: [
+      { id: 's1', emoji: '👟', nameJp: 'スニーカー', nameEn: 'Sneakers', price: 7800 },
+      { id: 's2', emoji: '👠', nameJp: 'ハイヒール', nameEn: 'High Heels', price: 9500 },
+      { id: 's3', emoji: '👞', nameJp: '革靴', nameEn: 'Leather Shoes', price: 12000 },
+      { id: 's4', emoji: '🥾', nameJp: 'ブーツ', nameEn: 'Boots', price: 11000 },
+      { id: 's5', emoji: '🩴', nameJp: 'サンダル', nameEn: 'Sandals', price: 3200 },
+      { id: 's6', emoji: '🥿', nameJp: 'フラットシューズ', nameEn: 'Flat Shoes', price: 5800 },
+      { id: 's7', emoji: '⛸️', nameJp: 'スリッパ', nameEn: 'Slippers', price: 1200 },
+      { id: 's8', emoji: '🪖', nameJp: '長靴', nameEn: 'Rain Boots', price: 4500 },
+      { id: 's9', emoji: '🎿', nameJp: 'スポーツシューズ', nameEn: 'Sport Shoes', price: 6800 },
+      { id: 's10', emoji: '👡', nameJp: 'パンプス', nameEn: 'Pumps', price: 8200 },
+    ]
+  },
+  { id: 'bags', icon: '👜', nameJp: 'カバン屋', nameEn: 'Bag Shop',
+    items: [
+      { id: 'b1', emoji: '👜', nameJp: 'ハンドバッグ', nameEn: 'Handbag', price: 15000 },
+      { id: 'b2', emoji: '🎒', nameJp: 'リュックサック', nameEn: 'Backpack', price: 8500 },
+      { id: 'b3', emoji: '💼', nameJp: 'ビジネスバッグ', nameEn: 'Business Bag', price: 18000 },
+      { id: 'b4', emoji: '👝', nameJp: 'ポーチ', nameEn: 'Pouch', price: 2800 },
+      { id: 'b5', emoji: '🛍️', nameJp: 'トートバッグ', nameEn: 'Tote Bag', price: 4200 },
+      { id: 'b6', emoji: '💰', nameJp: 'お財布', nameEn: 'Wallet', price: 6800 },
+      { id: 'b7', emoji: '🎽', nameJp: 'ショルダーバッグ', nameEn: 'Shoulder Bag', price: 11000 },
+      { id: 'b8', emoji: '🧳', nameJp: 'スーツケース', nameEn: 'Suitcase', price: 25000 },
+      { id: 'b9', emoji: '👛', nameJp: 'コインケース', nameEn: 'Coin Case', price: 1980 },
+      { id: 'b10', emoji: '🗂️', nameJp: 'クラッチバッグ', nameEn: 'Clutch Bag', price: 7500 },
+    ]
+  },
+  { id: 'accessories', icon: '💍', nameJp: 'アクセサリーショップ', nameEn: 'Accessory Shop',
+    items: [
+      { id: 'a1', emoji: '💍', nameJp: '指輪', nameEn: 'Ring', price: 5800 },
+      { id: 'a2', emoji: '📿', nameJp: 'ネックレス', nameEn: 'Necklace', price: 7200 },
+      { id: 'a3', emoji: '💎', nameJp: 'イヤリング', nameEn: 'Earrings', price: 4500 },
+      { id: 'a4', emoji: '⌚', nameJp: '時計', nameEn: 'Watch', price: 32000 },
+      { id: 'a5', emoji: '🪬', nameJp: 'ブレスレット', nameEn: 'Bracelet', price: 3800 },
+      { id: 'a6', emoji: '🕶️', nameJp: 'サングラス', nameEn: 'Sunglasses', price: 9800 },
+      { id: 'a7', emoji: '🪮', nameJp: 'ヘアピン', nameEn: 'Hair Pin', price: 980 },
+      { id: 'a8', emoji: '🎀', nameJp: 'ヘアバンド', nameEn: 'Headband', price: 1500 },
+      { id: 'a9', emoji: '🧲', nameJp: 'ブローチ', nameEn: 'Brooch', price: 2800 },
+      { id: 'a10', emoji: '🔮', nameJp: 'アンクレット', nameEn: 'Anklet', price: 3200 },
+    ]
+  },
+  { id: 'sports', icon: '⚽', nameJp: 'スポーツ用品店', nameEn: 'Sports Store',
+    items: [
+      { id: 'sp1', emoji: '⚽', nameJp: 'サッカーボール', nameEn: 'Soccer Ball', price: 4500 },
+      { id: 'sp2', emoji: '🎾', nameJp: 'テニスラケット', nameEn: 'Tennis Racket', price: 12000 },
+      { id: 'sp3', emoji: '🏊', nameJp: '水着', nameEn: 'Swimsuit', price: 5800 },
+      { id: 'sp4', emoji: '🏋️', nameJp: 'ダンベル', nameEn: 'Dumbbell', price: 3200 },
+      { id: 'sp5', emoji: '🧘', nameJp: 'ヨガマット', nameEn: 'Yoga Mat', price: 2800 },
+      { id: 'sp6', emoji: '🚴', nameJp: 'ヘルメット', nameEn: 'Helmet', price: 8500 },
+      { id: 'sp7', emoji: '🥊', nameJp: 'ボクシンググローブ', nameEn: 'Boxing Gloves', price: 6800 },
+      { id: 'sp8', emoji: '🏸', nameJp: 'バドミントンラケット', nameEn: 'Badminton Racket', price: 3500 },
+      { id: 'sp9', emoji: '🎿', nameJp: 'スキーウェア', nameEn: 'Ski Wear', price: 22000 },
+      { id: 'sp10', emoji: '🏄', nameJp: 'サーフボード', nameEn: 'Surfboard', price: 48000 },
+    ]
+  },
+];
+
+// ===== STATE =====
+let cart = [];
+let currentStore = null;
+let selectedPayment = null;
+let revealedPrices = {};
+
+// ===== INIT =====
+function init() {
+  const grid = document.getElementById('storeGrid');
+  grid.innerHTML = STORES.map(s => `
+    <div class="store-card" onclick="enterStore('${s.id}')">
+      <div class="store-icon">${s.icon}</div>
+      <div class="store-name-jp">${s.nameJp}</div>
+      <div class="store-name-en">${s.nameEn}</div>
+    </div>
+  `).join('');
+}
+
+function formatPrice(p) { return p.toLocaleString() + '円'; }
+
+// ===== SCREENS =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goToSelect() { showScreen('screen-select'); currentStore = null; }
+function showCart() { renderCart(); showScreen('screen-cart'); }
+
+// ===== STORE =====
+function enterStore(storeId) {
+  currentStore = STORES.find(s => s.id === storeId);
+  document.getElementById('shopTitle').textContent = currentStore.icon + ' ' + currentStore.nameJp;
+  document.getElementById('shopSubtitle').textContent = currentStore.nameEn;
+  renderItems();
+  showScreen('screen-shop');
+}
+
+function renderItems() {
+  const grid = document.getElementById('itemsGrid');
+  grid.innerHTML = currentStore.items.map(item => {
+    const inCart = cart.some(c => c.id === item.id);
+    const revealed = revealedPrices[item.id];
+    return `
+      <div class="item-card ${inCart ? 'in-cart' : ''}" id="card-${item.id}">
+        <div class="in-cart-badge">✓</div>
+        <span class="item-emoji">${item.emoji}</span>
+        <div class="item-name-jp">${item.nameJp}</div>
+        <div class="item-name-en">${item.nameEn}</div>
+        <button class="price-tag-btn ${revealed ? 'revealed' : ''}" onclick="revealPrice('${item.id}', ${item.price})">
+          🏷️ ${revealed ? '値段を見た！' : 'いくらですか？'}
+        </button>
+        <div class="price-bubble ${revealed ? 'show' : ''}" id="price-${item.id}">
+          <span class="question">いくらですか？</span>
+          <span class="answer">〇〇円です → <strong>${formatPrice(item.price)}</strong></span>
+        </div>
+        <button class="add-cart-btn ${inCart ? 'added' : ''}" onclick="addToCart('${item.id}')" ${inCart ? 'disabled' : ''}>
+          ${inCart ? '✓ カートに入れました' : '🛒 カートに入れる'}
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+function revealPrice(itemId, price) {
+  revealedPrices[itemId] = true;
+  const bubble = document.getElementById('price-' + itemId);
+  bubble.classList.add('show');
+  const btn = bubble.previousElementSibling;
+  btn.classList.add('revealed');
+  btn.textContent = '🏷️ 値段を見た！';
+}
+
+function addToCart(itemId) {
+  const allItems = STORES.flatMap(s => s.items);
+  const item = allItems.find(i => i.id === itemId);
+  if (!item || cart.some(c => c.id === itemId)) return;
+  cart.push(item);
+  updateCartCount();
+  renderItems();
+}
+
+function updateCartCount() {
+  document.getElementById('cartCount').textContent = cart.length;
+}
+
+// ===== CART =====
+function removeFromCart(itemId) {
+  cart = cart.filter(c => c.id !== itemId);
+  updateCartCount();
+  renderCart();
+  if (currentStore) renderItems();
+}
+
+function renderCart() {
+  const el = document.getElementById('cartContent');
+  if (cart.length === 0) {
+    el.innerHTML = `
+      <div class="cart-empty">
+        <div class="big">🛒</div>
+        <p>カートは からです</p>
+      </div>
+      <button class="continue-btn" onclick="goToSelect()">🏪 お店に もどる</button>
+    `;
+    return;
+  }
+  const total = cart.reduce((s, i) => s + i.price, 0);
+  el.innerHTML = cart.map(item => `
+    <div class="cart-item-row">
+      <div class="cart-item-emoji">${item.emoji}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.nameJp}</div>
+        <div class="cart-item-price">${formatPrice(item.price)}</div>
+      </div>
+      <button class="remove-btn" onclick="removeFromCart('${item.id}')">✕</button>
+    </div>
+  `).join('') + `
+    <div class="cart-total-box">
+      <span class="total-label">合計 / Total</span>
+      <span class="total-amount">${formatPrice(total)}</span>
+    </div>
+    <button class="checkout-btn" onclick="goToCheckout()">💳 お会計へ進む</button>
+    <button class="continue-btn" onclick="goToSelect()">🏪 買い物を続ける</button>
+  `;
+}
+
+// ===== CHECKOUT =====
+function goToCheckout() {
+  selectedPayment = null;
+  document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+  document.getElementById('payBtn').disabled = true;
+  document.getElementById('payBtn').textContent = 'お支払いを えらんでください';
+
+  const total = cart.reduce((s, i) => s + i.price, 0);
+  const receipt = document.getElementById('receiptBox');
+  receipt.innerHTML = `
+    <div style="font-weight:900;font-size:1rem;margin-bottom:12px;">🧾 レシート</div>
+    ${cart.map(item => `
+      <div class="receipt-item">
+        <span>${item.emoji} ${item.nameJp}</span>
+        <span>${formatPrice(item.price)}</span>
+      </div>
+    `).join('')}
+    <div class="receipt-total">
+      <span>合計</span>
+      <span>${formatPrice(total)}</span>
+    </div>
+  `;
+  showScreen('screen-checkout');
+}
+
+function selectPayment(type) {
+  selectedPayment = type;
+  document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+  document.getElementById('pay-' + type).classList.add('selected');
+  const payBtn = document.getElementById('payBtn');
+  payBtn.disabled = false;
+  const labels = { cash: '💴 現金で払う', card: '💳 カードで払う', paypay: '📱 PayPayで払う' };
+  payBtn.textContent = labels[type];
+}
+
+function completePurchase() {
+  if (!selectedPayment) return;
+  const total = cart.reduce((s, i) => s + i.price, 0);
+  const payLabels = { cash: '現金', card: 'クレジットカード', paypay: 'PayPay' };
+  const payEmoji = { cash: '💴', card: '💳', paypay: '📱' };
+
+  document.getElementById('completePhrase').innerHTML = `
+    <span class="phrase-label">📝 今日の練習フレーズ / Today's phrases</span>
+    <div style="margin-bottom:8px;">
+      ${cart.map(i => `<div>🗣️ 「${i.nameJp}は <span class="phrase">${formatPrice(i.price)}</span>です」</div>`).join('')}
+    </div>
+    <hr style="border-color:rgba(255,255,255,.2);margin:10px 0;">
+    <div>💰 合計: <span class="phrase">${formatPrice(total)}</span></div>
+    <div>${payEmoji[selectedPayment]} お支払い: <span class="phrase">${payLabels[selectedPayment]}</span></div>
+  `;
+  showScreen('screen-complete');
+}
+
+function restart() {
+  cart = [];
+  revealedPrices = {};
+  selectedPayment = null;
+  currentStore = null;
+  updateCartCount();
+  showScreen('screen-select');
+}
+
+init();
+</script>
+</body>
+</html>
