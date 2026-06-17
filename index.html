@@ -19,7 +19,7 @@
       --shadow: rgba(180, 140, 160, 0.15);
     }
 
-    html, body { height: 100%; }
+    html, body { min-height: 100%; }
 
     body {
       background-color: var(--bg);
@@ -31,7 +31,8 @@
       justify-content: center;
       min-height: 100vh;
       position: relative;
-      overflow: hidden;
+      overflow-x: hidden;
+      padding: 40px 0;
     }
 
     .blob {
