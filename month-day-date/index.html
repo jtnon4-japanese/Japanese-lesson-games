@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>なんがつ・なんにち・なんようび？</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
+
+  :root {
+    --sky: #5BBCFF;
+    --sun: #FFD93D;
+    --coral: #FF6B6B;
+    --mint: #6BCB77;
+    --lavender: #C77DFF;
+    --cream: #FFFBF0;
+    --navy: #1A1A3E;
+    --card: #FFFFFF;
+    --shadow: rgba(26,26,62,0.10);
+    --radius: 20px;
+    --radius-sm: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', 'Noto Sans JP', sans-serif;
+    background: var(--cream);
+    color: var(--navy);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── floating shapes bg ── */
+  .bg-shapes { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .shape {
+    position: absolute; border-radius: 50%; opacity: 0.13;
+    animation: float 8s ease-in-out infinite;
+  }
+  .shape:nth-child(1){width:220px;height:220px;background:var(--sky);top:-60px;left:-60px;animation-delay:0s;}
+  .shape:nth-child(2){width:160px;height:160px;background:var(--sun);top:60px;right:-40px;animation-delay:1.5s;}
+  .shape:nth-child(3){width:120px;height:120px;background:var(--coral);bottom:200px;left:20px;animation-delay:3s;}
+  .shape:nth-child(4){width:180px;height:180px;background:var(--mint);bottom:-60px;right:80px;animation-delay:2s;}
+  .shape:nth-child(5){width:90px;height:90px;background:var(--lavender);top:40%;left:50%;animation-delay:4s;}
+  @keyframes float { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-20px) rotate(5deg)} }
+
+  /* ── screens ── */
+  .screen { position: relative; z-index: 1; display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px;
+    background: rgba(255,251,240,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 2px solid rgba(91,188,255,0.2);
+  }
+  .topbar-title { font-size: 1rem; font-weight: 900; color: var(--navy); letter-spacing: -0.5px; }
+  .lang-switch { display: flex; gap: 6px; }
+  .lang-btn {
+    padding: 4px 10px; border-radius: 20px; border: 2px solid var(--sky);
+    background: white; color: var(--navy); font-size: 0.75rem; font-weight: 700;
+    cursor: pointer; transition: all .2s;
+  }
+  .lang-btn.active { background: var(--sky); color: white; border-color: var(--sky); }
+
+  /* ── HOME SCREEN ── */
+  #home { padding-top: 80px; }
+  .home-hero { text-align: center; margin-bottom: 32px; }
+  .hero-emoji { font-size: 3.5rem; display: block; margin-bottom: 8px; animation: bounce 2s ease-in-out infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .hero-title {
+    font-size: clamp(1.8rem, 6vw, 2.8rem); font-weight: 900; line-height: 1.1;
+    background: linear-gradient(135deg, var(--sky), var(--lavender));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .hero-sub { font-size: 0.9rem; color: #666; margin-top: 6px; font-weight: 600; }
+  .hero-sub-en { font-size: 0.8rem; color: #aaa; }
+
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: 0 4px 24px var(--shadow); padding: 24px;
+    width: 100%; max-width: 480px; margin-bottom: 16px;
+  }
+  .card-title { font-size: 0.75rem; font-weight: 800; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+
+  /* topic buttons */
+  .topic-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+  .topic-btn {
+    border: 3px solid transparent; border-radius: var(--radius-sm);
+    padding: 16px 8px; text-align: center; cursor: pointer; transition: all .2s;
+    background: #f5f5f5; font-family: inherit;
+  }
+  .topic-btn .t-icon { font-size: 1.8rem; display: block; margin-bottom: 4px; }
+  .topic-btn .t-label { font-size: 0.8rem; font-weight: 800; color: var(--navy); }
+  .topic-btn .t-sub { font-size: 0.65rem; color: #888; }
+  .topic-btn.selected { border-color: var(--sky); background: rgba(91,188,255,0.12); }
+  .topic-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(91,188,255,0.2); }
+
+  /* level */
+  .level-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .level-btn {
+    border: 3px solid transparent; border-radius: var(--radius-sm);
+    padding: 14px; text-align: center; cursor: pointer; transition: all .2s;
+    background: #f5f5f5; font-family: inherit;
+  }
+  .level-btn .l-icon { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+  .level-btn .l-name { font-size: 0.85rem; font-weight: 800; color: var(--navy); }
+  .level-btn .l-desc { font-size: 0.68rem; color: #888; margin-top: 2px; }
+  .level-btn.selected { border-color: var(--coral); background: rgba(255,107,107,0.10); }
+
+  /* question count */
+  .count-row { display: flex; align-items: center; justify-content: center; gap: 16px; }
+  .count-btn {
+    width: 38px; height: 38px; border-radius: 50%; border: none;
+    background: var(--sky); color: white; font-size: 1.4rem; font-weight: 900;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: transform .1s; line-height: 1;
+  }
+  .count-btn:hover { transform: scale(1.15); }
+  .count-display { font-size: 1.8rem; font-weight: 900; min-width: 48px; text-align: center; }
+  .count-label { font-size: 0.75rem; color: #999; font-weight: 600; }
+
+  /* start btn */
+  .start-btn {
+    width: 100%; max-width: 480px; padding: 18px;
+    border-radius: var(--radius); border: none;
+    background: linear-gradient(135deg, var(--sky), var(--lavender));
+    color: white; font-size: 1.1rem; font-weight: 900;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 6px 20px rgba(91,188,255,0.4);
+    transition: transform .2s, box-shadow .2s;
+    letter-spacing: 1px;
+  }
+  .start-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(91,188,255,0.5); }
+  .start-btn:active { transform: translateY(0); }
+  .start-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* ── QUIZ SCREEN ── */
+  #quiz { padding-top: 80px; }
+  .quiz-header { width: 100%; max-width: 480px; margin-bottom: 16px; }
+  .progress-bar { background: #e8e8f0; border-radius: 99px; height: 10px; overflow: hidden; margin-bottom: 8px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--sky), var(--lavender)); border-radius: 99px; transition: width .4s ease; }
+  .quiz-meta { display: flex; justify-content: space-between; align-items: center; }
+  .quiz-count-label { font-size: 0.8rem; font-weight: 700; color: #888; }
+  .score-label { font-size: 0.85rem; font-weight: 800; color: var(--navy); }
+  .score-label span { color: var(--mint); }
+
+  .question-card {
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: 0 8px 32px var(--shadow); padding: 32px 24px;
+    width: 100%; max-width: 480px; text-align: center; margin-bottom: 16px;
+    position: relative; overflow: hidden;
+  }
+  .q-tag { font-size: 0.7rem; font-weight: 800; color: #bbb; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .q-number {
+    font-size: clamp(3.5rem, 15vw, 6rem); font-weight: 900; line-height: 1;
+    color: var(--navy); margin: 8px 0 4px;
+  }
+  .q-number-en { font-size: 0.9rem; color: #bbb; font-weight: 600; margin-bottom: 8px; }
+  .q-prompt { font-size: 1rem; font-weight: 700; color: var(--coral); }
+  .q-prompt-small { font-size: 0.75rem; color: #bbb; margin-top: 2px; }
+
+  /* choices */
+  .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 480px; margin-bottom: 16px; }
+  .choice-btn {
+    padding: 14px 10px; border-radius: var(--radius-sm);
+    border: 3px solid #e8e8f0; background: white;
+    font-family: inherit; cursor: pointer; transition: all .15s;
+    text-align: center;
+  }
+  .choice-btn .c-kana { font-size: 1rem; font-weight: 800; color: var(--navy); display: block; }
+  .choice-btn .c-romaji { font-size: 0.65rem; color: #aaa; display: block; margin-top: 2px; }
+  .choice-btn .c-en { font-size: 0.65rem; color: #aaa; display: block; }
+  .choice-btn:hover:not(:disabled) { border-color: var(--sky); background: rgba(91,188,255,0.08); transform: translateY(-2px); }
+  .choice-btn.correct { border-color: var(--mint); background: rgba(107,203,119,0.15); animation: pulse-green .4s; }
+  .choice-btn.wrong { border-color: var(--coral); background: rgba(255,107,107,0.12); animation: shake .3s; }
+  @keyframes pulse-green { 0%{transform:scale(1)} 50%{transform:scale(1.06)} 100%{transform:scale(1)} }
+  @keyframes shake { 0%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} 100%{transform:translateX(0)} }
+
+  /* input mode */
+  .input-area { width: 100%; max-width: 480px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .answer-input {
+    width: 100%; padding: 16px 20px; border-radius: var(--radius-sm);
+    border: 3px solid #e8e8f0; font-size: 1.2rem; font-weight: 800;
+    font-family: inherit; text-align: center; color: var(--navy);
+    outline: none; transition: border-color .2s;
+  }
+  .answer-input:focus { border-color: var(--sky); }
+  .answer-input.correct { border-color: var(--mint); background: rgba(107,203,119,0.12); }
+  .answer-input.wrong { border-color: var(--coral); background: rgba(255,107,107,0.10); }
+  .submit-btn {
+    width: 100%; padding: 14px; border-radius: var(--radius-sm);
+    border: none; background: var(--navy); color: white;
+    font-size: 1rem; font-weight: 800; font-family: inherit; cursor: pointer;
+    transition: all .2s;
+  }
+  .submit-btn:hover { background: #2d2d6e; transform: translateY(-2px); }
+  .answer-hint { font-size: 0.85rem; color: #888; font-weight: 600; text-align: center; padding: 8px 16px; background: rgba(255,107,107,0.08); border-radius: var(--radius-sm); width: 100%; }
+  .answer-hint strong { color: var(--coral); }
+  .next-btn {
+    width: 100%; max-width: 480px; padding: 16px;
+    border-radius: var(--radius); border: none;
+    background: linear-gradient(135deg, var(--mint), #4aaa55);
+    color: white; font-size: 1rem; font-weight: 900;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 4px 16px rgba(107,203,119,0.35);
+    transition: transform .2s; display: none;
+  }
+  .next-btn.visible { display: block; }
+  .next-btn:hover { transform: translateY(-2px); }
+
+  /* feedback overlay on card */
+  .q-feedback {
+    display: none; margin-top: 16px; padding: 10px 16px;
+    border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 700;
+    text-align: center;
+  }
+  .q-feedback.show-correct { display: block; background: rgba(107,203,119,0.15); color: #2d7a36; }
+  .q-feedback.show-wrong { display: block; background: rgba(255,107,107,0.12); color: #c0392b; }
+
+  /* ── RESULT SCREEN ── */
+  #result { padding-top: 80px; text-align: center; }
+  .result-card {
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: 0 8px 32px var(--shadow); padding: 36px 28px;
+    width: 100%; max-width: 480px; margin-bottom: 16px;
+  }
+  .result-emoji { font-size: 4rem; display: block; margin-bottom: 8px; }
+  .result-title { font-size: 1.8rem; font-weight: 900; line-height: 1.2; margin-bottom: 8px; }
+  .result-msg { font-size: 0.95rem; color: #666; line-height: 1.6; }
+  .result-score-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 24px 0; }
+  .result-score { font-size: 3.5rem; font-weight: 900; line-height: 1; }
+  .result-score-max { font-size: 1.2rem; color: #bbb; font-weight: 700; align-self: flex-end; margin-bottom: 10px; }
+  .result-label { font-size: 0.75rem; color: #aaa; font-weight: 700; }
+  .stars { font-size: 2rem; margin: 8px 0; }
+
+  .result-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 480px; }
+  .replay-btn {
+    padding: 16px; border-radius: var(--radius); border: none;
+    background: linear-gradient(135deg, var(--coral), #ff8c42);
+    color: white; font-size: 1rem; font-weight: 900; font-family: inherit;
+    cursor: pointer; box-shadow: 0 4px 16px rgba(255,107,107,0.35);
+    transition: transform .2s;
+  }
+  .replay-btn:hover { transform: translateY(-2px); }
+  .home-btn-result {
+    padding: 14px; border-radius: var(--radius); border: 3px solid #e8e8f0;
+    background: white; color: var(--navy); font-size: 0.95rem; font-weight: 800;
+    font-family: inherit; cursor: pointer; transition: all .2s;
+  }
+  .home-btn-result:hover { border-color: var(--sky); }
+
+  /* ── CONFETTI ── */
+  #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 200; }
+
+  /* ── CORRECT FLASH ── */
+  .flash-overlay {
+    position: fixed; inset: 0; background: rgba(107,203,119,0.25);
+    z-index: 150; pointer-events: none; opacity: 0; transition: opacity .2s;
+  }
+  .flash-overlay.show { opacity: 1; }
+
+  /* lang-dependent visibility */
+  .romaji { display: none; }
+  .en-label { display: none; }
+  body.lang-romaji .romaji { display: block; }
+  body.lang-en .romaji { display: block; }
+  body.lang-en .en-label { display: block; }
+
+  .kana-instruction {
+    width: 100%; display: flex; align-items: center; gap: 8px;
+    background: rgba(91,188,255,0.10); border: 2px solid rgba(91,188,255,0.3);
+    border-radius: var(--radius-sm); padding: 10px 14px;
+  }
+  .ki-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .ki-text { font-size: 0.82rem; font-weight: 700; color: var(--navy); flex: 1; }
+  .ki-example { font-size: 0.78rem; font-weight: 800; color: var(--sky); white-space: nowrap; flex-shrink: 0; }
+
+  /* responsive */
+  @media (max-width: 360px) {
+    .topic-grid { grid-template-columns: repeat(3,1fr); }
+    .choices-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+<div class="flash-overlay" id="flashOverlay"></div>
+
+<div class="bg-shapes">
+  <div class="shape"></div><div class="shape"></div><div class="shape"></div>
+  <div class="shape"></div><div class="shape"></div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a href="../" style="text-decoration:none;color:var(--navy);font-size:0.85rem;font-weight:700;background:#f0f0f5;padding:6px 14px;border-radius:20px;">← もどる</a>
+  <div class="topbar-title">🗓 なんがつ・なんにち？</div>
+  <div class="lang-switch">
+    <button class="lang-btn active" onclick="setLang('ja')" id="btn-ja">あ</button>
+    <button class="lang-btn" onclick="setLang('romaji')" id="btn-romaji">Aa</button>
+    <button class="lang-btn" onclick="setLang('en')" id="btn-en">EN</button>
+  </div>
+</div>
+
+<!-- ══ HOME SCREEN ══ -->
+<div class="screen active" id="home">
+  <div class="home-hero">
+    <span class="hero-emoji">📅</span>
+    <div class="hero-title">なんがつ・なんにち・<br>なんようび？</div>
+    <div class="hero-sub romaji">Nan-gatsu · Nan-nichi · Nan-yōbi?</div>
+    <div class="hero-sub en-label" style="display:none;">What month · What day · What day of the week?</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🎯 もんだいをえらぼう <span class="romaji">/ Choose topics</span><span class="en-label" style="display:none"> / Choose topics</span></div>
+    <div class="topic-grid">
+      <button class="topic-btn selected" onclick="toggleTopic('month',this)" data-topic="month">
+        <span class="t-icon">📆</span>
+        <span class="t-label">月 <span class="romaji" style="font-size:0.65rem;font-weight:600;">gatsu</span></span>
+        <span class="t-sub en-label" style="display:none;">Month</span>
+        <span class="t-sub">1〜12がつ</span>
+      </button>
+      <button class="topic-btn selected" onclick="toggleTopic('day',this)" data-topic="day">
+        <span class="t-icon">📅</span>
+        <span class="t-label">日 <span class="romaji" style="font-size:0.65rem;font-weight:600;">nichi</span></span>
+        <span class="t-sub en-label" style="display:none;">Day</span>
+        <span class="t-sub">1〜31にち</span>
+      </button>
+      <button class="topic-btn selected" onclick="toggleTopic('weekday',this)" data-topic="weekday">
+        <span class="t-icon">🗓</span>
+        <span class="t-label">曜日 <span class="romaji" style="font-size:0.65rem;font-weight:600;">yōbi</span></span>
+        <span class="t-sub en-label" style="display:none;">Weekday</span>
+        <span class="t-sub">月〜日ようび</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⭐ レベル <span class="romaji">/ Level</span><span class="en-label" style="display:none"> / Level</span></div>
+    <div class="level-grid">
+      <button class="level-btn selected" onclick="setLevel('easy',this)">
+        <span class="l-icon">🌟</span>
+        <span class="l-name">かんたん</span>
+        <span class="l-desc romaji">Kantan</span>
+        <span class="l-desc en-label" style="display:none;">Easy — Choose answer</span>
+        <span class="l-desc" id="easy-desc">えらんで こたえる</span>
+      </button>
+      <button class="level-btn" onclick="setLevel('normal',this)">
+        <span class="l-icon">🚀</span>
+        <span class="l-name">ふつう</span>
+        <span class="l-desc romaji">Futsū</span>
+        <span class="l-desc en-label" style="display:none;">Normal — Type answer</span>
+        <span class="l-desc" id="normal-desc">じぶんで にゅうりょく</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔢 もんだいすう <span class="romaji">/ Number of questions</span><span class="en-label" style="display:none"> / Number of questions</span></div>
+    <div class="count-row">
+      <button class="count-btn" onclick="changeCount(-1)">－</button>
+      <div>
+        <div class="count-display" id="countDisplay">10</div>
+        <div class="count-label" id="countLabel">もんだい</div>
+      </div>
+      <button class="count-btn" onclick="changeCount(1)">＋</button>
+    </div>
+  </div>
+
+  <button class="start-btn" id="startBtn" onclick="startQuiz()">
+    はじめる！🎉
+  </button>
+</div>
+
+<!-- ══ QUIZ SCREEN ══ -->
+<div class="screen" id="quiz">
+  <div class="quiz-header">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="quiz-meta">
+      <div class="quiz-count-label" id="quizCountLabel">1 / 10</div>
+      <div class="score-label">スコア: <span id="scoreDisplay">0</span></div>
+    </div>
+  </div>
+
+  <div class="question-card">
+    <div class="q-tag" id="qTag">月（がつ）</div>
+    <div class="q-number" id="qNumber">3</div>
+    <div class="q-number-en en-label" id="qNumberEn" style="display:none;"></div>
+    <div class="q-prompt" id="qPrompt">なんがつ？</div>
+    <div class="q-prompt-small romaji" id="qRomaji"></div>
+    <div class="q-feedback" id="qFeedback"></div>
+  </div>
+
+  <!-- Easy: choices -->
+  <div class="choices-grid" id="choicesGrid"></div>
+
+  <!-- Normal: input -->
+  <div class="input-area" id="inputArea" style="display:none;">
+    <div class="kana-instruction" id="kanaInstruction">
+      <span class="ki-icon">⌨️</span>
+      <span class="ki-text">ひらがなで にゅうりょく してください</span>
+      <span class="ki-example" id="kanaExample">例）よっか</span>
+    </div>
+    <input class="answer-input" id="answerInput" type="text" placeholder="ひらがなで こたえる" autocomplete="off" autocorrect="off" spellcheck="false">
+    <button class="submit-btn" onclick="submitInput()">こたえる ✓</button>
+    <div class="answer-hint" id="answerHint" style="display:none;"></div>
+  </div>
+
+  <button class="next-btn" id="nextBtn" onclick="nextQuestion()">つぎへ →</button>
+</div>
+
+<!-- ══ RESULT SCREEN ══ -->
+<div class="screen" id="result">
+  <div class="result-card">
+    <span class="result-emoji" id="resultEmoji">🏆</span>
+    <div class="result-title" id="resultTitle">すごい！まんてん！</div>
+    <div class="stars" id="resultStars">⭐⭐⭐⭐⭐</div>
+    <div class="result-score-row">
+      <div>
+        <div class="result-label">スコア</div>
+        <div class="result-score" id="resultScore" style="color: var(--mint);">10</div>
+      </div>
+      <div class="result-score-max" id="resultMax">/ 10</div>
+    </div>
+    <div class="result-msg" id="resultMsg">かんぺきです！<br>また チャレンジしてね！🎊</div>
+  </div>
+  <div class="result-btns">
+    <button class="replay-btn" onclick="replayQuiz()">🔄 もう一度やる！</button>
+    <button class="home-btn-result" onclick="goHome()">🏠 ホームにもどる</button>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const MONTHS = [
+  {n:1,  kana:'いちがつ', romaji:'Ichi-gatsu', en:'January'},
+  {n:2,  kana:'にがつ',   romaji:'Ni-gatsu',   en:'February'},
+  {n:3,  kana:'さんがつ', romaji:'San-gatsu',   en:'March'},
+  {n:4,  kana:'しがつ',   romaji:'Shi-gatsu',   en:'April'},
+  {n:5,  kana:'ごがつ',   romaji:'Go-gatsu',    en:'May'},
+  {n:6,  kana:'ろくがつ', romaji:'Roku-gatsu',  en:'June'},
+  {n:7,  kana:'しちがつ', romaji:'Shichi-gatsu',en:'July'},
+  {n:8,  kana:'はちがつ', romaji:'Hachi-gatsu', en:'August'},
+  {n:9,  kana:'くがつ',   romaji:'Ku-gatsu',    en:'September'},
+  {n:10, kana:'じゅうがつ',romaji:'Jū-gatsu',   en:'October'},
+  {n:11, kana:'じゅういちがつ',romaji:'Jūichi-gatsu',en:'November'},
+  {n:12, kana:'じゅうにがつ',romaji:'Jūni-gatsu',en:'December'},
+];
+
+const DAYS = [
+  {n:1,  kana:'ついたち',     romaji:'Tsuitachi', en:'1st (special)', special:true},
+  {n:2,  kana:'ふつか',       romaji:'Futsuka',   en:'2nd (special)', special:true},
+  {n:3,  kana:'みっか',       romaji:'Mikka',     en:'3rd (special)', special:true},
+  {n:4,  kana:'よっか',       romaji:'Yokka',     en:'4th (special)', special:true},
+  {n:5,  kana:'いつか',       romaji:'Itsuka',    en:'5th (special)', special:true},
+  {n:6,  kana:'むいか',       romaji:'Muika',     en:'6th (special)', special:true},
+  {n:7,  kana:'なのか',       romaji:'Nanoka',    en:'7th (special)', special:true},
+  {n:8,  kana:'ようか',       romaji:'Yōka',      en:'8th (special)', special:true},
+  {n:9,  kana:'ここのか',     romaji:'Kokonoka',  en:'9th (special)', special:true},
+  {n:10, kana:'とおか',       romaji:'Tōka',      en:'10th (special)', special:true},
+  {n:11, kana:'じゅういちにち',romaji:'Jūichi-nichi',en:'11th'},
+  {n:12, kana:'じゅうににち', romaji:'Jūni-nichi',  en:'12th'},
+  {n:13, kana:'じゅうさんにち',romaji:'Jūsan-nichi', en:'13th'},
+  {n:14, kana:'じゅうよっか', romaji:'Jūyokka',     en:'14th (special)', special:true},
+  {n:15, kana:'じゅうごにち', romaji:'Jūgo-nichi',  en:'15th'},
+  {n:16, kana:'じゅうろくにち',romaji:'Jūroku-nichi',en:'16th'},
+  {n:17, kana:'じゅうしちにち',romaji:'Jūshichi-nichi',en:'17th'},
+  {n:18, kana:'じゅうはちにち',romaji:'Jūhachi-nichi',en:'18th'},
+  {n:19, kana:'じゅうくにち', romaji:'Jūku-nichi',  en:'19th'},
+  {n:20, kana:'はつか',       romaji:'Hatsuka',     en:'20th (special)', special:true},
+  {n:21, kana:'にじゅういちにち',romaji:'Nijūichi-nichi',en:'21st'},
+  {n:22, kana:'にじゅうににち',romaji:'Nijūni-nichi',en:'22nd'},
+  {n:23, kana:'にじゅうさんにち',romaji:'Nijūsan-nichi',en:'23rd'},
+  {n:24, kana:'にじゅうよっか',romaji:'Nijūyokka',  en:'24th (special)', special:true},
+  {n:25, kana:'にじゅうごにち',romaji:'Nijūgo-nichi',en:'25th'},
+  {n:26, kana:'にじゅうろくにち',romaji:'Nijūroku-nichi',en:'26th'},
+  {n:27, kana:'にじゅうしちにち',romaji:'Nijūshichi-nichi',en:'27th'},
+  {n:28, kana:'にじゅうはちにち',romaji:'Nijūhachi-nichi',en:'28th'},
+  {n:29, kana:'にじゅうくにち',romaji:'Nijūku-nichi',en:'29th'},
+  {n:30, kana:'さんじゅうにち',romaji:'Sanjū-nichi',en:'30th'},
+  {n:31, kana:'さんじゅういちにち',romaji:'Sanjūichi-nichi',en:'31st'},
+];
+
+const WEEKDAYS = [
+  {n:'月',kana:'げつようび',romaji:'Getsuyōbi',en:'Monday'},
+  {n:'火',kana:'かようび',  romaji:'Kayōbi',    en:'Tuesday'},
+  {n:'水',kana:'すいようび',romaji:'Suiyōbi',   en:'Wednesday'},
+  {n:'木',kana:'もくようび',romaji:'Mokuyōbi',  en:'Thursday'},
+  {n:'金',kana:'きんようび',romaji:'Kin\'yōbi', en:'Friday'},
+  {n:'土',kana:'どようび',  romaji:'Doyōbi',    en:'Saturday'},
+  {n:'日',kana:'にちようび',romaji:'Nichiyōbi', en:'Sunday'},
+];
+
+// ── STATE ──
+let lang = 'ja';
+let selectedTopics = new Set(['month','day','weekday']);
+let level = 'easy';
+let questionCount = 10;
+let questions = [];
+let currentQ = 0;
+let score = 0;
+let answered = false;
+let lastSettings = null;
+
+// ── LANG ──
+function setLang(l) {
+  lang = l;
+  document.body.className = 'lang-' + l;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + l).classList.add('active');
+  // show/hide en-label spans
+  document.querySelectorAll('.en-label').forEach(el => el.style.display = (l === 'en') ? '' : 'none');
+}
+
+// ── HOME ──
+function toggleTopic(topic, btn) {
+  if (selectedTopics.has(topic)) {
+    if (selectedTopics.size === 1) return; // keep at least 1
+    selectedTopics.delete(topic);
+    btn.classList.remove('selected');
+  } else {
+    selectedTopics.add(topic);
+    btn.classList.add('selected');
+  }
+}
+
+function setLevel(l, btn) {
+  level = l;
+  document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function changeCount(delta) {
+  questionCount = Math.max(3, Math.min(30, questionCount + delta));
+  document.getElementById('countDisplay').textContent = questionCount;
+}
+
+// ── QUESTION GENERATION ──
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function buildPool() {
+  let pool = [];
+  if (selectedTopics.has('month'))   pool.push(...MONTHS.map(m => ({type:'month', data:m})));
+  if (selectedTopics.has('day'))     pool.push(...DAYS.map(d => ({type:'day', data:d})));
+  if (selectedTopics.has('weekday')) pool.push(...WEEKDAYS.map(w => ({type:'weekday', data:w})));
+  return pool;
+}
+
+function generateQuestions(n) {
+  const topics = [...selectedTopics];
+  const numTopics = topics.length;
+
+  // Determine per-topic counts based on ratio
+  // 3 topics: day=40%, month=30%, weekday=30%
+  // 2 topics: 50% / 50%
+  // 1 topic:  100%
+  let counts = {};
+  if (numTopics === 1) {
+    counts[topics[0]] = n;
+  } else if (numTopics === 2) {
+    const half = Math.floor(n / 2);
+    counts[topics[0]] = half;
+    counts[topics[1]] = n - half;
+  } else {
+    // 3 topics: day 40%, month 30%, weekday 30%
+    const dayCount     = selectedTopics.has('day')     ? Math.round(n * 0.4) : 0;
+    const monthCount   = selectedTopics.has('month')   ? Math.round(n * 0.3) : 0;
+    const weekdayCount = selectedTopics.has('weekday') ? Math.round(n * 0.3) : 0;
+    // Adjust rounding so total = n
+    let total = dayCount + monthCount + weekdayCount;
+    counts = { day: dayCount, month: monthCount, weekday: weekdayCount };
+    // Fix rounding diff on the largest bucket
+    if (total !== n) counts['day'] += (n - total);
+  }
+
+  // Build per-type pools and pick questions
+  const typePools = {
+    month:   shuffle(MONTHS.map(m => ({type:'month', data:m}))),
+    day:     shuffle(DAYS.map(d => ({type:'day', data:d}))),
+    weekday: shuffle(WEEKDAYS.map(w => ({type:'weekday', data:w}))),
+  };
+
+  // For day pool: ensure specials appear first
+  if (selectedTopics.has('day')) {
+    const specials = DAYS.filter(d => d.special).map(d => ({type:'day', data:d}));
+    const normals  = DAYS.filter(d => !d.special).map(d => ({type:'day', data:d}));
+    typePools.day = [...shuffle(specials), ...shuffle(normals)];
+  }
+
+  let qs = [];
+  for (const [type, count] of Object.entries(counts)) {
+    if (!count) continue;
+    const pool = typePools[type];
+    // Pick `count` unique items, cycling if needed
+    for (let i = 0; i < count; i++) {
+      qs.push(pool[i % pool.length]);
+    }
+  }
+
+  return shuffle(qs);
+}
+
+// Confusable distractors for each day number
+// Each entry lists up to 3 plausible wrong readings learners commonly mix up
+const DAY_CONFUSABLES = {
+  1:  ['いちにち','ついにち','いちじつ'],
+  2:  ['ににち','ふにち','にか'],
+  3:  ['さんにち','みか','さんか'],
+  4:  ['よんにち','しにち','ようか'],
+  5:  ['ごにち','ごか','いつにち'],
+  6:  ['ろくにち','むか','ろくか'],
+  7:  ['しちにち','ななにち','なのにち'],
+  8:  ['はちにち','よっか','はちか'],
+  9:  ['きゅうにち','くにち','ここのにち'],
+  10: ['じゅうにち','じゅっか','とか'],
+  11: ['じゅういちか','じゅうひとにち','いちじゅうにち'],
+  12: ['じゅうにか','じゅうふつか','ふつかじゅう'],
+  13: ['じゅうさんか','さんじゅうにち','じゅうみっか'],
+  14: ['じゅうしにち','じゅうよんにち','じゅうよにち'],
+  15: ['じゅうごか','ごじゅうにち','じゅうごっか'],
+  16: ['じゅうろくか','じゅうむいか','ろくじゅうにち'],
+  17: ['じゅうしちか','じゅうななにち','じゅうなのか'],
+  18: ['じゅうはちか','じゅうはっか','はちじゅうにち'],
+  19: ['じゅうきゅうにち','じゅうここのか','きゅうじゅうにち'],
+  20: ['にじゅうにち','はたか','にじゅっか'],
+  21: ['にじゅういちか','にじゅうひとにち','いちにじゅうにち'],
+  22: ['にじゅうにか','にじゅうふつか','にじゅうふにち'],
+  23: ['にじゅうさんか','にじゅうみっか','さんにじゅうにち'],
+  24: ['にじゅうしにち','にじゅうよんにち','にじゅうよにち'],
+  25: ['にじゅうごか','ごにじゅうにち','にじゅうごっか'],
+  26: ['にじゅうろくか','にじゅうむいか','ろくにじゅうにち'],
+  27: ['にじゅうしちか','にじゅうななにち','にじゅうなのか'],
+  28: ['にじゅうはちか','にじゅうはっか','はちにじゅうにち'],
+  29: ['にじゅうきゅうにち','にじゅうここのか','きゅうにじゅうにち'],
+  30: ['さんじゅうか','さんじゅっか','みそか'],
+  31: ['さんじゅういちか','さんじゅうひとにち','いちさんじゅうにち'],
+};
+
+function getChoices(correctQ) {
+  const type = correctQ.type;
+
+  if (type === 'day') {
+    const n = correctQ.data.n;
+    const confusables = (DAY_CONFUSABLES[n] || []).slice(0, 3);
+    // Pad with random other day readings if confusables < 3
+    const allDayKana = DAYS.map(d => d.kana).filter(k => k !== correctQ.data.kana);
+    const padded = [...confusables];
+    if (padded.length < 3) {
+      shuffle(allDayKana).forEach(k => {
+        if (!padded.includes(k)) padded.push(k);
+      });
+    }
+    const wrongChoices = padded.slice(0, 3).map(kana => ({
+      type: 'day',
+      data: { kana, romaji: '', en: '' }
+    }));
+    return shuffle([correctQ, ...wrongChoices]);
+  }
+
+  let pool;
+  if (type === 'month') pool = MONTHS.map(m => ({type:'month', data:m}));
+  else pool = WEEKDAYS.map(w => ({type:'weekday', data:w}));
+
+  const wrong = shuffle(pool.filter(q => q.data.kana !== correctQ.data.kana)).slice(0, 3);
+  return shuffle([correctQ, ...wrong]);
+}
+
+// ── START QUIZ ──
+function startQuiz() {
+  questions = generateQuestions(questionCount);
+  currentQ = 0;
+  score = 0;
+  answered = false;
+  lastSettings = { topics: new Set(selectedTopics), level, questionCount };
+  showScreen('quiz');
+  renderQuestion();
+}
+
+// ── RENDER QUESTION ──
+function renderQuestion() {
+  answered = false;
+  const q = questions[currentQ];
+  const total = questions.length;
+
+  // progress
+  document.getElementById('progressFill').style.width = (currentQ / total * 100) + '%';
+  document.getElementById('quizCountLabel').textContent = (currentQ+1) + ' / ' + total;
+  document.getElementById('scoreDisplay').textContent = score;
+
+  // tag & number display
+  const tagMap = {month:'月（がつ）',day:'日（にち）',weekday:'曜日（ようび）'};
+  document.getElementById('qTag').textContent = tagMap[q.type];
+
+  const numEl = document.getElementById('qNumber');
+  if (q.type === 'weekday') numEl.textContent = q.data.n + '曜日';
+  else if (q.type === 'month') numEl.textContent = q.data.n + '月';
+  else numEl.textContent = q.data.n + '日';
+
+  // EN number hint
+  const enEl = document.getElementById('qNumberEn');
+  enEl.textContent = q.data.en || '';
+
+  // prompt
+  const promptMap = {month:'なんがつ？', day:'なんにち？', weekday:'なんようび？'};
+  const romajiPromptMap = {month:'Nan-gatsu?', day:'Nan-nichi?', weekday:'Nan-yōbi?'};
+  document.getElementById('qPrompt').textContent = promptMap[q.type];
+  document.getElementById('qRomaji').textContent = romajiPromptMap[q.type];
+
+  // feedback reset
+  const fb = document.getElementById('qFeedback');
+  fb.className = 'q-feedback';
+  fb.textContent = '';
+
+  document.getElementById('nextBtn').classList.remove('visible');
+
+  if (level === 'easy') {
+    document.getElementById('choicesGrid').style.display = 'grid';
+    document.getElementById('inputArea').style.display = 'none';
+    renderChoices(q);
+  } else {
+    document.getElementById('choicesGrid').style.display = 'none';
+    document.getElementById('inputArea').style.display = 'flex';
+    const inp = document.getElementById('answerInput');
+    inp.value = '';
+    inp.className = 'answer-input';
+    inp.disabled = false;
+    document.getElementById('answerHint').style.display = 'none';
+    document.querySelector('.submit-btn').style.display = '';
+    // Update kana example based on question type
+    const exampleMap = {
+      month:   '例）さんがつ',
+      day:     '例）よっか・ついたち',
+      weekday: '例）もくようび',
+    };
+    document.getElementById('kanaExample').textContent = exampleMap[q.type] || '例）ひらがな';
+    setTimeout(() => inp.focus(), 100);
+  }
+}
+
+function renderChoices(q) {
+  const choices = getChoices(q);
+  const grid = document.getElementById('choicesGrid');
+  grid.innerHTML = '';
+  choices.forEach(choice => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `
+      <span class="c-kana">${choice.data.kana}</span>
+      <span class="c-romaji romaji">${choice.data.romaji}</span>
+      <span class="c-en en-label" style="display:${lang==='en'?'block':'none'}">${choice.data.en||''}</span>
+    `;
+    btn.onclick = () => handleChoice(choice, q, btn, grid);
+    grid.appendChild(btn);
+  });
+}
+
+function handleChoice(choice, q, btn, grid) {
+  if (answered) return;
+  answered = true;
+  const correct = choice.data.kana === q.data.kana;
+  if (correct) {
+    btn.classList.add('correct');
+    score++;
+    showCorrectFX();
+  } else {
+    btn.classList.add('wrong');
+    // highlight correct
+    grid.querySelectorAll('.choice-btn').forEach(b => {
+      if (b.querySelector('.c-kana').textContent === q.data.kana) b.classList.add('correct');
+    });
+    showWrongFX(q);
+  }
+  grid.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+  document.getElementById('scoreDisplay').textContent = score;
+  document.getElementById('nextBtn').classList.add('visible');
+}
+
+function submitInput() {
+  if (answered) return;
+  const inp = document.getElementById('answerInput');
+  const val = inp.value.trim();
+  if (!val) return;
+  const q = questions[currentQ];
+  const correct = val === q.data.kana;
+  answered = true;
+  inp.disabled = true;
+  document.querySelector('.submit-btn').style.display = 'none';
+
+  if (correct) {
+    inp.className = 'answer-input correct';
+    score++;
+    showCorrectFX();
+  } else {
+    inp.className = 'answer-input wrong';
+    const hint = document.getElementById('answerHint');
+    hint.innerHTML = `こたえ：<strong>${q.data.kana}</strong><span class="romaji"> (${q.data.romaji})</span>`;
+    hint.style.display = 'block';
+    showWrongFX(q);
+  }
+  document.getElementById('scoreDisplay').textContent = score;
+  document.getElementById('nextBtn').classList.add('visible');
+}
+
+document.getElementById('answerInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitInput();
+});
+
+function showCorrectFX() {
+  const fb = document.getElementById('qFeedback');
+  const msgs = ['せいかい！🎉','すごい！⭐','よくできました！✨','パーフェクト！🌟','ばっちり！🎊'];
+  fb.textContent = msgs[Math.floor(Math.random()*msgs.length)];
+  fb.className = 'q-feedback show-correct';
+
+  // flash
+  const fl = document.getElementById('flashOverlay');
+  fl.classList.add('show');
+  setTimeout(() => fl.classList.remove('show'), 300);
+
+  // confetti burst
+  launchConfetti(30);
+}
+
+function showWrongFX(q) {
+  const fb = document.getElementById('qFeedback');
+  fb.className = 'q-feedback show-wrong';
+  fb.innerHTML = `もう少し！ せいかいは <strong>${q.data.kana}</strong> <span class="romaji">(${q.data.romaji})</span>`;
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    showResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+// ── RESULT ──
+function showResult() {
+  const total = questions.length;
+  const pct = score / total;
+
+  showScreen('result');
+  document.getElementById('resultScore').textContent = score;
+  document.getElementById('resultMax').textContent = '/ ' + total;
+
+  let emoji, title, stars, msg, scoreColor;
+  if (pct === 1) {
+    emoji = '🏆'; title = 'まんてん！かんぺき！'; stars = '⭐⭐⭐⭐⭐';
+    msg = 'すばらしい！ぜんぶせいかい！\nきみはすごい！もっとむずかしい もんだいにもチャレンジしてみよう！🎊';
+    scoreColor = 'var(--sun)';
+    setTimeout(() => launchConfetti(120), 300);
+  } else if (pct >= 0.7) {
+    emoji = '😊'; title = 'もう少し！'; stars = '⭐⭐⭐⭐';
+    msg = 'とても よくできました！\nあと すこしで まんてん！もう一度 チャレンジしよう！💪';
+    scoreColor = 'var(--sky)';
+    setTimeout(() => launchConfetti(40), 300);
+  } else if (pct >= 0.4) {
+    emoji = '😄'; title = 'がんばれ！'; stars = '⭐⭐⭐';
+    msg = 'なかなか いい かんじ！\n練習すれば きっと できるよ！もう一度 やってみよう！🌈';
+    scoreColor = 'var(--coral)';
+  } else {
+    emoji = '🌱'; title = 'もう一度 チャレンジ！'; stars = '⭐⭐';
+    msg = 'だいじょうぶ！練習すれば かならず おぼえられる！\n一緒に がんばろう！🌟';
+    scoreColor = 'var(--lavender)';
+  }
+
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultStars').textContent = stars;
+  document.getElementById('resultMsg').textContent = msg;
+  document.getElementById('resultScore').style.color = scoreColor;
+}
+
+function replayQuiz() {
+  startQuiz();
+}
+function goHome() {
+  showScreen('home');
+}
+
+// ── SCREEN SWITCH ──
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── CONFETTI ──
+const canvas = document.getElementById('confetti-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resize); resize();
+
+function launchConfetti(count) {
+  const colors = ['#5BBCFF','#FFD93D','#FF6B6B','#6BCB77','#C77DFF','#FF8C42'];
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: Math.random() * canvas.width, y: -10,
+      vx: (Math.random()-0.5)*6, vy: Math.random()*4+2,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      r: Math.random()*7+3, rot: Math.random()*360,
+      rotV: (Math.random()-0.5)*8, life: 1
+    });
+  }
+  if (particles.length > 0 && !animating) animate();
+}
+
+let animating = false;
+function animate() {
+  animating = true;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles = particles.filter(p => p.life > 0);
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.12;
+    p.rot += p.rotV; p.life -= 0.012;
+    ctx.save();
+    ctx.globalAlpha = p.life;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot * Math.PI/180);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r*1.5);
+    ctx.restore();
+  });
+  if (particles.length > 0) requestAnimationFrame(animate);
+  else animating = false;
+}
+
+// init
+setLang('ja');
+</script>
+</body>
+</html>
