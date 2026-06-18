@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>なんじ、なんぷん？</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky: #5BBFED;
+    --sun: #FFD93D;
+    --coral: #FF6B6B;
+    --mint: #6BCFC0;
+    --navy: #1A2E4A;
+    --soft: #F0F8FF;
+    --white: #FAFAFA;
+    --gray: #8899AA;
+    --success: #4CAF50;
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: linear-gradient(135deg, #E8F6FF 0%, #FFF9E6 50%, #FFE8F0 100%);
+    min-height: 100vh;
+    color: var(--navy);
+  }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: white;
+    box-shadow: 0 2px 12px rgba(91,191,237,0.15);
+  }
+  .lang-toggle { display: flex; gap: 6px; }
+  .lang-btn {
+    padding: 6px 14px;
+    border-radius: 30px;
+    border: 2px solid var(--sky);
+    background: white;
+    color: var(--sky);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  .lang-btn.active { background: var(--sky); color: white; }
+  .home-link-btn {
+    text-decoration: none;
+    color: var(--navy);
+    font-size: 13px;
+    font-weight: 700;
+    background: #f0f0f5;
+    padding: 6px 14px;
+    border-radius: 30px;
+  }
+
+  #homeScreen { padding: 20px; align-items: center; }
+  .home-title { text-align: center; margin: 20px 0 30px; }
+  .home-title h1 {
+    font-size: clamp(36px, 8vw, 64px);
+    font-weight: 900;
+    color: var(--navy);
+    line-height: 1.1;
+  }
+  .home-title h1 span { color: var(--sky); }
+  .clock-deco {
+    font-size: 80px;
+    animation: bounce 2s ease-in-out infinite;
+    display: block;
+    text-align: center;
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .section-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 20px;
+    width: 100%;
+    max-width: 480px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 20px rgba(26,46,74,0.08);
+  }
+  .section-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray);
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .level-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .level-btn {
+    padding: 14px 8px;
+    border-radius: 14px;
+    border: 3px solid transparent;
+    background: var(--soft);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  .level-btn .level-emoji { font-size: 28px; display: block; }
+  .level-btn .level-name { font-size: 14px; font-weight: 700; margin-top: 4px; }
+  .level-btn .level-sub { font-size: 10px; color: var(--gray); display: block; margin-top: 2px; }
+  .level-btn.selected { border-color: var(--sky); background: #E8F6FF; }
+  .level-btn:hover { transform: scale(1.03); }
+
+  .count-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+  .count-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: var(--sky);
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .count-btn:hover { background: #3aa8e0; transform: scale(1.1); }
+  .count-display {
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--navy);
+    min-width: 80px;
+    text-align: center;
+  }
+  .count-unit { font-size: 16px; color: var(--gray); text-align: center; }
+
+  .start-btn {
+    width: 100%;
+    max-width: 480px;
+    padding: 18px;
+    border-radius: 60px;
+    border: none;
+    background: linear-gradient(135deg, var(--coral), #FF9A3C);
+    color: white;
+    font-size: 22px;
+    font-weight: 900;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    box-shadow: 0 6px 20px rgba(255,107,107,0.4);
+    transition: all 0.2s;
+    margin-top: 8px;
+    letter-spacing: 2px;
+  }
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(255,107,107,0.5); }
+
+  /* QUIZ */
+  #quizScreen { padding: 16px; align-items: center; }
+
+  .progress-bar-wrap {
+    width: 100%; max-width: 500px;
+    background: #ddd;
+    border-radius: 10px;
+    height: 10px;
+    margin: 8px 0 16px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sky), var(--mint));
+    border-radius: 10px;
+    transition: width 0.4s ease;
+  }
+  .quiz-top {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 500px;
+    font-size: 14px;
+    color: var(--gray);
+  }
+  .quiz-score { font-weight: 700; color: var(--sun); font-size: 18px; }
+
+  .clock-area {
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+    margin-bottom: 16px;
+    box-shadow: 0 6px 30px rgba(26,46,74,0.1);
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .digital-clock {
+    font-size: clamp(52px, 14vw, 96px);
+    font-weight: 900;
+    font-family: 'Fredoka One', cursive;
+    color: var(--navy);
+    letter-spacing: 4px;
+    background: #f0f4f8;
+    padding: 16px 32px;
+    border-radius: 16px;
+    animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes popIn {
+    from { transform: scale(0.6); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .analog-clock-svg { animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+
+  .hybrid-wrap {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .hybrid-digital {
+    font-size: clamp(36px, 9vw, 60px);
+    font-weight: 900;
+    font-family: 'Fredoka One', cursive;
+    color: var(--navy);
+    background: #f0f4f8;
+    padding: 12px 24px;
+    border-radius: 14px;
+    animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  .answer-area { width: 100%; max-width: 500px; }
+
+  /* Easy: multiple choice */
+  .choices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .choice-btn {
+    padding: 16px 10px;
+    border-radius: 14px;
+    border: 3px solid #E0EEF8;
+    background: white;
+    font-size: clamp(13px, 3.5vw, 17px);
+    font-weight: 700;
+    color: var(--navy);
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: 'Noto Sans JP', sans-serif;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .choice-btn:hover:not(:disabled) { border-color: var(--sky); background: #E8F6FF; transform: scale(1.02); }
+  .choice-btn.correct { border-color: var(--success); background: #E8F5E9; color: #2E7D32; }
+  .choice-btn.wrong { border-color: var(--coral); background: #FFE8E8; color: var(--coral); }
+  .choice-btn:disabled { cursor: default; }
+
+  /* Normal/Hard: text input */
+  .text-input-wrap { display: flex; flex-direction: column; gap: 10px; }
+
+  /* Hard only: ampm row */
+  .ampm-row { display: flex; gap: 10px; }
+  .ampm-btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 14px;
+    border: 3px solid #E0EEF8;
+    background: white;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: 'Noto Sans JP', sans-serif;
+    text-align: center;
+  }
+  .ampm-btn.selected { border-color: var(--sky); background: #E8F6FF; }
+
+  .kana-input {
+    width: 100%;
+    padding: 16px 20px;
+    border-radius: 14px;
+    border: 3px solid #E0EEF8;
+    font-size: 20px;
+    font-family: 'Noto Sans JP', sans-serif;
+    color: var(--navy);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .kana-input:focus { border-color: var(--sky); }
+
+  .hint-text {
+    font-size: 12px;
+    color: var(--gray);
+    padding: 4px 2px;
+    line-height: 1.6;
+  }
+  .hint-romaji { color: var(--sky); font-weight: 600; }
+
+  .submit-btn {
+    padding: 16px;
+    border-radius: 14px;
+    border: none;
+    background: var(--sky);
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: all 0.18s;
+  }
+  .submit-btn:hover:not(:disabled) { background: #3aa8e0; }
+  .submit-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .feedback-box {
+    margin-top: 12px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.6;
+    display: none;
+    width: 100%;
+    max-width: 500px;
+  }
+  .feedback-box.correct { background: #E8F5E9; color: #2E7D32; border: 2px solid #A5D6A7; }
+  .feedback-box.wrong { background: #FFF3E0; color: #BF360C; border: 2px solid #FFCC80; }
+  .han-note {
+    margin-top: 8px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: #FFF8E1;
+    border: 2px solid #FFD54F;
+    color: #5D4037;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.6;
+    display: none;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .next-btn {
+    margin-top: 10px;
+    width: 100%;
+    max-width: 500px;
+    padding: 14px;
+    border-radius: 60px;
+    border: none;
+    background: linear-gradient(135deg, var(--sky), var(--mint));
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    display: none;
+    transition: all 0.18s;
+    letter-spacing: 1px;
+  }
+  .next-btn:hover { transform: translateY(-2px); }
+
+  /* RESULT */
+  #resultScreen {
+    padding: 24px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .result-emoji { font-size: 80px; animation: bounce 1.5s infinite; }
+  .result-title { font-size: 32px; font-weight: 900; margin: 16px 0 8px; line-height: 1.2; }
+  .result-score-display {
+    background: white;
+    border-radius: 24px;
+    padding: 24px 40px;
+    margin: 16px 0;
+    box-shadow: 0 4px 20px rgba(26,46,74,0.1);
+  }
+  .result-fraction {
+    font-size: 56px;
+    font-weight: 900;
+    font-family: 'Fredoka One', cursive;
+    color: var(--navy);
+  }
+  .result-fraction span { font-size: 30px; color: var(--gray); }
+  .result-percent { font-size: 22px; font-weight: 700; color: var(--sky); }
+  .result-stars { font-size: 36px; margin: 8px 0; }
+  .result-msg {
+    font-size: 16px;
+    color: var(--navy);
+    max-width: 360px;
+    margin: 0 auto 20px;
+    line-height: 1.8;
+  }
+  .result-btns { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 360px; }
+  .retry-btn {
+    padding: 16px;
+    border-radius: 60px;
+    border: none;
+    background: linear-gradient(135deg, var(--coral), #FF9A3C);
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    box-shadow: 0 4px 16px rgba(255,107,107,0.35);
+    transition: all 0.2s;
+  }
+  .retry-btn:hover { transform: translateY(-2px); }
+  .home-btn-result {
+    padding: 14px;
+    border-radius: 60px;
+    border: 3px solid var(--sky);
+    background: white;
+    color: var(--sky);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: all 0.2s;
+  }
+  .home-btn-result:hover { background: #E8F6FF; }
+
+  /* EN/Romaji subtitle visibility */
+  .en-sub { display: none; font-size: 11px; color: #AAA; }
+  body.en-mode .en-sub { display: inline; }
+  body.en-mode .en-sub.block { display: block; }
+  .romaji-sub { display: none; font-size: 11px; color: var(--sky); font-style: italic; }
+  body.romaji-mode .romaji-sub { display: block; }
+  body.en-mode .romaji-sub { display: block; }
+
+  #confettiCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+  }
+</style>
+</head>
+<body>
+<canvas id="confettiCanvas"></canvas>
+
+<!-- HOME -->
+<div id="homeScreen" class="screen active">
+  <div class="top-bar">
+    <a class="home-link-btn" href="../">← もどる</a>
+    <span style="font-weight:900;font-size:18px;color:var(--navy)">🕐 なんじ？</span>
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('ja')">あ</button>
+      <button class="lang-btn" onclick="setLang('romaji')">Aa</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+
+  <div class="home-title">
+    <span class="clock-deco">🕐</span>
+    <h1>なんじ、<span>なんぷん</span>？</h1>
+    <div class="en-sub block" style="font-size:14px;margin-top:6px;">What time is it?</div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-label">
+      レベルをえらぼう
+      <span class="en-sub"> / Choose your level</span>
+    </div>
+    <div class="level-grid">
+      <button class="level-btn selected" onclick="selectLevel('easy')" id="lvl-easy">
+        <span class="level-emoji">⭐</span>
+        <span class="level-name">かんたん</span>
+        <span class="romaji-sub">kantan</span>
+        <span class="level-sub en-sub">Easy</span>
+      </button>
+      <button class="level-btn" onclick="selectLevel('normal')" id="lvl-normal">
+        <span class="level-emoji">⭐⭐</span>
+        <span class="level-name">ふつう</span>
+        <span class="romaji-sub">futsuu</span>
+        <span class="level-sub en-sub">Normal</span>
+      </button>
+      <button class="level-btn" onclick="selectLevel('hard')" id="lvl-hard">
+        <span class="level-emoji">⭐⭐⭐</span>
+        <span class="level-name">むずかしい</span>
+        <span class="romaji-sub">muzukashii</span>
+        <span class="level-sub en-sub">Hard</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-label">
+      もんだいの かず
+      <span class="en-sub"> / Number of questions</span>
+    </div>
+    <div class="count-control">
+      <button class="count-btn" onclick="changeCount(-1)">－</button>
+      <div>
+        <div class="count-display" id="countDisplay">10</div>
+        <div class="count-unit">もん <span class="en-sub">questions</span></div>
+      </div>
+      <button class="count-btn" onclick="changeCount(1)">＋</button>
+    </div>
+  </div>
+
+  <button class="start-btn" onclick="startQuiz()">
+    はじめる！
+    <span class="en-sub block" style="font-size:13px;opacity:0.9">Let's Start!</span>
+  </button>
+</div>
+
+<!-- QUIZ -->
+<div id="quizScreen" class="screen">
+  <div class="top-bar">
+    <button onclick="goHome()" style="background:none;border:none;cursor:pointer;font-size:24px;line-height:1;">🏠</button>
+    <div class="quiz-top" style="flex:1;margin:0 12px;">
+      <span id="quizCounter">1 / 10</span>
+      <span class="quiz-score" id="scoreDisplay">★ 0</span>
+    </div>
+  </div>
+  <div style="padding:0 16px;width:100%;max-width:516px;margin:0 auto;">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progressBar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div style="padding:0 16px;width:100%;display:flex;flex-direction:column;align-items:center;">
+    <div class="clock-area" id="clockArea"></div>
+    <div class="answer-area" id="answerArea"></div>
+    <div class="feedback-box" id="feedbackBox"></div>
+    <div class="han-note" id="hanNote"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">
+      つぎへ ➜ <span class="en-sub">Next</span>
+    </button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="resultScreen" class="screen">
+  <div id="resultEmoji" class="result-emoji">🎉</div>
+  <div class="result-title" id="resultTitle">まんてん！</div>
+  <div class="result-score-display">
+    <div class="result-fraction">
+      <span id="resCorrect">10</span><span> / </span><span id="resTotal">10</span>
+    </div>
+    <div class="result-percent" id="resPercent">100%</div>
+    <div class="result-stars" id="resStars">⭐⭐⭐</div>
+  </div>
+  <div class="result-msg" id="resultMsg"></div>
+  <div class="result-btns">
+    <button class="retry-btn" onclick="retryQuiz()">もう一度！🔄 <span class="en-sub">Play Again!</span></button>
+    <button class="home-btn-result" onclick="goHome()">🏠 ホームへ <span class="en-sub">Back to Home</span></button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let lang = 'ja';
+let level = 'easy';
+let totalQ = 10;
+let questions = [];
+let currentQ = 0;
+let score = 0;
+let selectedAmPm = null;
+
+// ============================================================
+// LANGUAGE
+// ============================================================
+function setLang(l) {
+  lang = l;
+  document.body.className = l === 'en' ? 'en-mode' : l === 'romaji' ? 'romaji-mode' : '';
+  document.querySelectorAll('.lang-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['ja','romaji','en'][i] === l);
+  });
+  // Refresh romaji visibility on any visible choice buttons
+  const showRomaji = l === 'romaji' || l === 'en';
+  document.querySelectorAll('.choice-btn .romaji-sub').forEach(s => {
+    s.style.display = showRomaji ? 'block' : 'none';
+  });
+}
+
+// ============================================================
+// LEVEL / COUNT
+// ============================================================
+function selectLevel(lv) {
+  level = lv;
+  document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('lvl-' + lv).classList.add('selected');
+}
+
+function changeCount(d) {
+  totalQ = Math.max(5, Math.min(20, totalQ + d));
+  document.getElementById('countDisplay').textContent = totalQ;
+}
+
+// ============================================================
+// READING LOGIC — phonetic rules
+// ぷん: 前の音が っ（促音）または ん（撥音）のとき
+// ふん: それ以外
+//
+// 1分  いち → いっぷん（促音）
+// 2分  に   → にふん
+// 3分  さん → さんぷん（撥音）
+// 4分  よん → よんぷん（撥音）
+// 5分  ご   → ごふん
+// 6分  ろく → ろっぷん（促音）
+// 7分  なな → ななふん
+// 8分  はち → はちふん（標準）/ はっぷん（口語）両方OK
+// 9分  きゅう→ きゅうふん
+// 10の倍数: じゅっ → ぷん
+// ============================================================
+
+const HOUR_WORDS = [
+  '','いちじ','にじ','さんじ','よじ','ごじ','ろくじ',
+  'しちじ','はちじ','くじ','じゅうじ','じゅういちじ','じゅうにじ'
+];
+const HOUR_ROMAJI = [
+  '','ichiji','niji','sanji','yoji','goji','rokuji',
+  'shichiji','hachiji','kuji','juuji','juuichiji','juuniji'
+];
+
+function readHour(h) {
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return HOUR_WORDS[h12];
+}
+function readHourRomaji(h) {
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return HOUR_ROMAJI[h12];
+}
+
+// tens prefix (used with non-round minutes)
+const TENS_K   = ['','じゅう','にじゅう','さんじゅう','よんじゅう','ごじゅう'];
+const TENS_R   = ['','juu',   'nijuu',   'sanjuu',    'yonjuu',    'gojuu'  ];
+// tens prefix for round minutes (っ form)
+const TENS_PK  = ['','じゅっ','にじゅっ','さんじゅっ','よんじゅっ','ごじゅっ'];
+const TENS_PR  = ['','jupp',  'nijupp',  'sanjupp',   'yonjupp',   'gojupp' ];
+
+// ones: standard reading / sokuon-nasal reading before ぷん (null = use ふん)
+const ONES_K   = ['','いち', 'に',  'さん', 'よん', 'ご', 'ろく', 'なな', 'はち',  'きゅう'];
+const ONES_PK  = ['','いっ', null,  'さん', 'よん', null, 'ろっ', null,   null,     null   ];
+const ONES_R   = ['','ichi', 'ni',  'san',  'yon',  'go', 'roku', 'nana', 'hachi',  'kyuu' ];
+const ONES_PR  = ['','ip',   null,  'sanp', 'yonp', null, 'ropp', null,   null,      null  ];
+
+// Returns { kana, romaji, altKana, altRomaji }
+// altKana/altRomaji: for 8-minute variants (はちふん ↔ はっぷん)
+function buildMinuteReading(m) {
+  if (m === 0) return { kana: '',     romaji: '',    altKana: null, altRomaji: null, isZero: true };
+  if (m === 30) return { kana: 'はん', romaji: 'han', altKana: null, altRomaji: null, isZero: false };
+
+  const t = Math.floor(m / 10);
+  const o = m % 10;
+
+  let kana = '', romaji = '', isPun = false;
+
+  if (t === 0) {
+    if (ONES_PK[o] !== null) {
+      kana = ONES_PK[o]; romaji = ONES_PR[o]; isPun = true;
+    } else {
+      kana = ONES_K[o]; romaji = ONES_R[o]; isPun = false;
+    }
+  } else if (o === 0) {
+    kana = TENS_PK[t]; romaji = TENS_PR[t]; isPun = true;
+  } else {
+    if (ONES_PK[o] !== null) {
+      kana = TENS_K[t] + ONES_PK[o]; romaji = TENS_R[t] + ONES_PR[o]; isPun = true;
+    } else {
+      kana = TENS_K[t] + ONES_K[o]; romaji = TENS_R[t] + ONES_R[o]; isPun = false;
+    }
+  }
+
+  const sk = isPun ? 'ぷん' : 'ふん';
+  const sr = isPun ? 'pun'  : 'fun';
+
+  // 8分: standard はちふん, also accept colloquial はっぷん
+  // IMPORTANT: use TENS_K (じゅう) not TENS_PK (じゅっ) — e.g. さんじゅうはっぷん NOT さんじゅっはっぷん
+  let altKana = null, altRomaji = null;
+  if (o === 8) {
+    const tensAlt  = t === 0 ? '' : TENS_K[t];   // さんじゅう, よんじゅう etc.
+    const tensAltR = t === 0 ? '' : TENS_R[t];
+    altKana   = tensAlt  + 'はっぷん';
+    altRomaji = tensAltR + 'happun';
+  }
+
+  return { kana: kana + sk, romaji: romaji + sr, altKana, altRomaji, isZero: false };
+}
+
+function getFullReading(time) {
+  const { h, m } = time;
+  const hourK = readHour(h);
+  const hourR = readHourRomaji(h);
+  const minObj = buildMinuteReading(m);
+  // 0分: answer is just the hour (e.g. よじ), no minute suffix
+  const kana = minObj.isZero ? hourK : hourK + minObj.kana;
+  const romaji = minObj.isZero ? hourR : hourR + ' ' + minObj.romaji;
+  return {
+    kana,
+    romaji,
+    altKana:   minObj.altKana   ? hourK + minObj.altKana   : null,
+    altRomaji: minObj.altRomaji ? hourR + ' ' + minObj.altRomaji : null,
+    isZero: minObj.isZero
+  };
+}
+
+// Hard mode: prepend ごぜん/ごご — but answer input does NOT include ampm (that's the button)
+function getFullReadingHard(time) {
+  const { h } = time;
+  const r = getFullReading(time);
+  return {
+    kana:      r.kana,        // no ごぜん/ごご prefix — user types only hour+min
+    romaji:    r.romaji,
+    altKana:   r.altKana,
+    altRomaji: r.altRomaji,
+    ampm:      h < 12 ? 'am' : 'pm',
+    isZero:    r.isZero
+  };
+}
+
+// 30分 alt: はん ↔ さんじゅっぷん
+function getAltReading30(time) {
+  if (time.m !== 30) return null;
+  const hourK = readHour(time.h);
+  const hourR = readHourRomaji(time.h);
+  return { kana: hourK + 'さんじゅっぷん', romaji: hourR + ' sanjuppun' };
+}
+
+// ============================================================
+// TIME-OF-DAY SCENE (SVG background for hard mode)
+// ============================================================
+function getTimeOfDayScene(h) {
+  // Returns SVG scene + label based on hour
+  if (h >= 5 && h < 7) {
+    // 夜明け / dawn
+    return {
+      label: '夜明け', labelEn: 'Dawn', emoji: '🌅',
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" width="240" height="100" style="border-radius:12px">
+        <defs><linearGradient id="sky0" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFB347"/><stop offset="100%" stop-color="#FFE4B5"/></linearGradient></defs>
+        <rect width="240" height="100" fill="url(#sky0)" rx="12"/>
+        <ellipse cx="120" cy="105" rx="50" ry="30" fill="#FF6B35" opacity="0.8"/>
+        <ellipse cx="120" cy="100" rx="32" ry="20" fill="#FFD93D" opacity="0.9"/>
+        <rect x="0" y="72" width="240" height="28" fill="#2D5016" rx="0"/>
+        <rect x="0" y="80" width="240" height="20" fill="#3A6B1F" rx="0"/>
+        <!-- trees -->
+        <polygon points="30,72 42,50 54,72" fill="#1A3D0A"/>
+        <polygon points="190,72 202,48 214,72" fill="#1A3D0A"/>
+        <!-- clouds -->
+        <ellipse cx="60" cy="25" rx="20" ry="8" fill="white" opacity="0.6"/>
+        <ellipse cx="75" cy="22" rx="14" ry="7" fill="white" opacity="0.6"/>
+        <ellipse cx="170" cy="30" rx="18" ry="7" fill="white" opacity="0.5"/>
+      </svg>`
+    };
+  } else if (h >= 7 && h < 11) {
+    // 朝 / morning
+    return {
+      label: '朝', labelEn: 'Morning', emoji: '🌤️',
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" width="240" height="100" style="border-radius:12px">
+        <defs><linearGradient id="sky1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#87CEEB"/><stop offset="100%" stop-color="#E0F4FF"/></linearGradient></defs>
+        <rect width="240" height="100" fill="url(#sky1)" rx="12"/>
+        <circle cx="200" cy="22" r="18" fill="#FFD93D"/>
+        <!-- rays -->
+        <g stroke="#FFE066" stroke-width="2" opacity="0.7">
+          <line x1="200" y1="0" x2="200" y2="6"/><line x1="222" y1="22" x2="228" y2="22"/>
+          <line x1="215" y1="7" x2="219" y2="3"/><line x1="215" y1="37" x2="219" y2="41"/>
+        </g>
+        <!-- clouds -->
+        <ellipse cx="70" cy="28" rx="28" ry="11" fill="white" opacity="0.9"/>
+        <ellipse cx="90" cy="24" rx="20" ry="10" fill="white" opacity="0.9"/>
+        <ellipse cx="50" cy="30" rx="16" ry="8" fill="white" opacity="0.8"/>
+        <ellipse cx="150" cy="35" rx="22" ry="9" fill="white" opacity="0.7"/>
+        <!-- ground -->
+        <rect x="0" y="75" width="240" height="25" fill="#5A9E2F" rx="0"/>
+        <polygon points="20,75 34,52 48,75" fill="#2D5016"/>
+        <polygon points="180,75 196,50 212,75" fill="#2D5016"/>
+        <!-- house -->
+        <rect x="95" y="62" width="28" height="18" fill="#D4915A"/>
+        <polygon points="95,62 109,50 123,62" fill="#B03A2E"/>
+        <rect x="104" y="68" width="10" height="12" fill="#8B5E3C"/>
+      </svg>`
+    };
+  } else if (h >= 11 && h < 14) {
+    // 昼 / noon
+    return {
+      label: '昼', labelEn: 'Noon', emoji: '☀️',
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" width="240" height="100" style="border-radius:12px">
+        <defs><linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4FC3F7"/><stop offset="100%" stop-color="#B3E5FC"/></linearGradient></defs>
+        <rect width="240" height="100" fill="url(#sky2)" rx="12"/>
+        <circle cx="120" cy="18" r="22" fill="#FFD93D"/>
+        <g stroke="#FFE066" stroke-width="2.5" opacity="0.8">
+          <line x1="120" y1="0" x2="120" y2="-4"/><line x1="120" y1="40" x2="120" y2="44"/>
+          <line x1="142" y1="18" x2="146" y2="18"/><line x1="94" y1="18" x2="90" y2="18"/>
+          <line x1="136" y1="4" x2="139" y2="1"/><line x1="104" y1="4" x2="101" y2="1"/>
+          <line x1="136" y1="32" x2="139" y2="35"/><line x1="104" y1="32" x2="101" y2="35"/>
+        </g>
+        <ellipse cx="55" cy="40" rx="22" ry="9" fill="white" opacity="0.85"/>
+        <ellipse cx="70" cy="37" rx="16" ry="8" fill="white" opacity="0.85"/>
+        <ellipse cx="185" cy="44" rx="20" ry="8" fill="white" opacity="0.7"/>
+        <rect x="0" y="75" width="240" height="25" fill="#6EC35B" rx="0"/>
+        <ellipse cx="40" cy="75" rx="22" ry="12" fill="#4A9A2B"/>
+        <ellipse cx="200" cy="75" rx="20" ry="11" fill="#4A9A2B"/>
+      </svg>`
+    };
+  } else if (h >= 14 && h < 17) {
+    // 午後 / afternoon
+    return {
+      label: '午後', labelEn: 'Afternoon', emoji: '🌤️',
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" width="240" height="100" style="border-radius:12px">
+        <defs><linearGradient id="sky3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5BBFED"/><stop offset="100%" stop-color="#C8E6F5"/></linearGradient></defs>
+        <rect width="240" height="100" fill="url(#sky3)" rx="12"/>
+        <circle cx="190" cy="25" r="18" fill="#FFD93D"/>
+        <ellipse cx="75" cy="32" rx="26" ry="10" fill="white" opacity="0.85"/>
+        <ellipse cx="93" cy="29" rx="18" ry="9" fill="white" opacity="0.85"/>
+        <ellipse cx="55" cy="34" rx="14" ry="7" fill="white" opacity="0.7"/>
+        <ellipse cx="155" cy="38" rx="20" ry="8" fill="white" opacity="0.6"/>
+        <rect x="0" y="75" width="240" height="25" fill="#5A9E2F" rx="0"/>
+        <polygon points="15,75 30,50 45,75" fill="#2D5016"/>
+        <polygon points="195,75 212,48 229,75" fill="#2D5016"/>
+        <rect x="100" y="60" width="30" height="20" fill="#C9956B"/>
+        <polygon points="98,60 115,45 132,60" fill="#A0392B"/>
+        <rect x="108" y="67" width="12" height="13" fill="#7A5230"/>
+      </svg>`
+    };
+  } else if (h >= 17 && h < 20) {
+    // 夕方 / evening
+    return {
+      label: '夕方', labelEn: 'Evening', emoji: '🌇',
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" width="240" height="100" style="border-radius:12px">
+        <defs><linearGradient id="sky4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF6B35"/><stop offset="50%" stop-color="#FFB347"/><stop offset="100%" stop-color="#FFE4B5"/></linearGradient></defs>
+        <rect width="240" height="100" fill="url(#sky4)" rx="12"/>
+        <ellipse cx="120" cy="78" rx="40" ry="18" fill="#FF4500" opacity="0.85"/>
+        <ellipse cx="120" cy="82" rx="26" ry="14" fill="#FF8C00" opacity="0.9"/>
+        <!-- silhouette buildings -->
+        <rect x="0" y="62" width="240" height="38" fill="#1A0A00"/>
+        <rect x="10" y="50" width="22" height="24" fill="#1A0A00"/>
+        <rect x="55" y="44" width="18" height="28" fill="#1A0A00"/>
+        <rect x="160" y="40" width="24" height="32" fill="#1A0A00"/>
+        <rect x="200" y="52" width="18" height="22" fill="#1A0A00"/>
+        <!-- windows glow -->
+        <rect x="15" y="54" width="5" height="4" fill="#FFD93D" opacity="0.8"/>
+        <rect x="24" y="54" width="5" height="4" fill="#FFD93D" opacity="0.6"/>
+        <rect x="59" y="48" width="5" height="4" fill="#FFD93D" opacity="0.8"/>
+        <rect x="165" y="44" width="5" height="4" fill="#FFD93D" opacity="0.7"/>
+        <rect x="175" y="44" width="5" height="4" fill="#FFD93D" opacity="0.5"/>
+      </svg>`
+    };
+  } else if (h >= 20 && h < 23) {
+    // 夜 / night
+    return {
+      label: '夜', labelEn: 'Night', emoji: '🌙',
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" width="240" height="100" style="border-radius:12px">
+        <defs><linearGradient id="sky5" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0D1B3E"/><stop offset="100%" stop-color="#1A2E4A"/></linearGradient></defs>
+        <rect width="240" height="100" fill="url(#sky5)" rx="12"/>
+        <!-- stars -->
+        <circle cx="30" cy="15" r="1.5" fill="white" opacity="0.9"/>
+        <circle cx="70" cy="8" r="1" fill="white" opacity="0.8"/>
+        <circle cx="110" cy="20" r="1.5" fill="white" opacity="0.7"/>
+        <circle cx="150" cy="10" r="1" fill="white" opacity="0.9"/>
+        <circle cx="185" cy="18" r="1.5" fill="white" opacity="0.8"/>
+        <circle cx="215" cy="8" r="1" fill="white" opacity="0.7"/>
+        <circle cx="50" cy="35" r="1" fill="white" opacity="0.6"/>
+        <circle cx="130" cy="32" r="1" fill="white" opacity="0.7"/>
+        <circle cx="200" cy="35" r="1.5" fill="white" opacity="0.6"/>
+        <!-- moon -->
+        <circle cx="195" cy="22" r="14" fill="#FFF9C4"/>
+        <circle cx="202" cy="18" r="11" fill="#1A2E4A"/>
+        <!-- silhouette -->
+        <rect x="0" y="68" width="240" height="32" fill="#0D1B3E"/>
+        <rect x="8" y="52" width="20" height="28" fill="#0D1B3E"/>
+        <rect x="50" y="45" width="16" height="35" fill="#0D1B3E"/>
+        <rect x="162" y="42" width="22" height="38" fill="#0D1B3E"/>
+        <rect x="202" y="55" width="16" height="25" fill="#0D1B3E"/>
+        <!-- lit windows -->
+        <rect x="12" y="56" width="5" height="4" fill="#FFD93D" opacity="0.9"/>
+        <rect x="21" y="62" width="5" height="4" fill="#FFD93D" opacity="0.7"/>
+        <rect x="54" y="49" width="5" height="4" fill="#FFD93D" opacity="0.8"/>
+        <rect x="166" y="48" width="5" height="4" fill="#FFD93D" opacity="0.9"/>
+        <rect x="176" y="54" width="5" height="4" fill="#FFD93D" opacity="0.6"/>
+        <rect x="205" y="59" width="5" height="4" fill="#FFD93D" opacity="0.8"/>
+      </svg>`
+    };
+  } else {
+    // 深夜 / midnight (23:00-4:59)
+    return {
+      label: '深夜', labelEn: 'Midnight', emoji: '🌃',
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" width="240" height="100" style="border-radius:12px">
+        <defs><linearGradient id="sky6" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#060918"/><stop offset="100%" stop-color="#0D1B3E"/></linearGradient></defs>
+        <rect width="240" height="100" fill="url(#sky6)" rx="12"/>
+        <!-- many stars -->
+        <circle cx="20" cy="10" r="1.5" fill="white" opacity="0.95"/>
+        <circle cx="45" cy="5" r="1" fill="white" opacity="0.8"/>
+        <circle cx="80" cy="15" r="1.5" fill="white" opacity="0.9"/>
+        <circle cx="115" cy="6" r="1" fill="white" opacity="0.85"/>
+        <circle cx="140" cy="18" r="1.5" fill="white" opacity="0.7"/>
+        <circle cx="170" cy="8" r="1" fill="white" opacity="0.9"/>
+        <circle cx="210" cy="14" r="1.5" fill="white" opacity="0.8"/>
+        <circle cx="230" cy="5" r="1" fill="white" opacity="0.7"/>
+        <circle cx="35" cy="28" r="1" fill="white" opacity="0.6"/>
+        <circle cx="95" cy="30" r="1.5" fill="white" opacity="0.7"/>
+        <circle cx="160" cy="26" r="1" fill="white" opacity="0.65"/>
+        <circle cx="220" cy="28" r="1" fill="white" opacity="0.6"/>
+        <!-- crescent moon -->
+        <circle cx="30" cy="22" r="12" fill="#E8E0A8"/>
+        <circle cx="36" cy="18" r="9.5" fill="#060918"/>
+        <!-- silhouette city -->
+        <rect x="0" y="65" width="240" height="35" fill="#06091A"/>
+        <rect x="5" y="48" width="18" height="30" fill="#06091A"/>
+        <rect x="40" y="42" width="14" height="35" fill="#06091A"/>
+        <rect x="80" y="50" width="20" height="28" fill="#06091A"/>
+        <rect x="155" y="38" width="20" height="40" fill="#06091A"/>
+        <rect x="195" y="50" width="18" height="28" fill="#06091A"/>
+        <rect x="220" y="44" width="16" height="34" fill="#06091A"/>
+        <!-- few lit windows (late night) -->
+        <rect x="9" y="52" width="4" height="3" fill="#FFD93D" opacity="0.7"/>
+        <rect x="43" y="46" width="4" height="3" fill="#FFD93D" opacity="0.5"/>
+        <rect x="158" y="44" width="4" height="3" fill="#FFD93D" opacity="0.6"/>
+        <rect x="223" y="48" width="4" height="3" fill="#FFD93D" opacity="0.4"/>
+      </svg>`
+    };
+  }
+}
+function randomTime() {
+  if (level === 'easy') {
+    const h = 1 + Math.floor(Math.random() * 12);
+    const mins = [0,10,20,30,40,50];
+    const m = mins[Math.floor(Math.random() * mins.length)];
+    return { h, m };
+  } else if (level === 'normal') {
+    const h = 1 + Math.floor(Math.random() * 12);
+    const m = Math.floor(Math.random() * 60);
+    return { h, m };
+  } else {
+    const h = Math.floor(Math.random() * 24);
+    const m = Math.floor(Math.random() * 60);
+    return { h, m };
+  }
+}
+
+function formatDigital(time) {
+  const { h, m } = time;
+  // Hard: show 24h format; others: show 12h
+  const displayH = level === 'hard' ? String(h).padStart(2,'0') : String(h % 12 === 0 ? 12 : h % 12);
+  return displayH + ':' + String(m).padStart(2,'0');
+}
+
+function drawAnalogClock(h, m) {
+  const size = 180;
+  const cx = size/2, cy = size/2, r = size/2 - 8;
+  const hourAngle = ((h % 12) + m/60) * 30 * Math.PI/180;
+  const minAngle = m * 6 * Math.PI/180;
+
+  let svg = `<svg class="analog-clock-svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="white" stroke="#5BBFED" stroke-width="5"/>`;
+
+  for (let i = 0; i < 60; i++) {
+    const a = i * 6 * Math.PI/180;
+    const isHour = i % 5 === 0;
+    const inner = isHour ? r - 14 : r - 7;
+    const x1 = cx + Math.sin(a)*inner, y1 = cy - Math.cos(a)*inner;
+    const x2 = cx + Math.sin(a)*(r-2), y2 = cy - Math.cos(a)*(r-2);
+    svg += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${isHour?'#1A2E4A':'#CBD5E0'}" stroke-width="${isHour?2.5:1}"/>`;
+  }
+  for (let i = 1; i <= 12; i++) {
+    const a = i * 30 * Math.PI/180;
+    const x = cx + Math.sin(a)*(r-26), y = cy - Math.cos(a)*(r-26) + 5;
+    svg += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" fill="#1A2E4A" font-size="13" font-weight="700" font-family="Fredoka One,sans-serif">${i}</text>`;
+  }
+  const hx = cx + Math.sin(hourAngle)*(r*0.55), hy = cy - Math.cos(hourAngle)*(r*0.55);
+  svg += `<line x1="${cx}" y1="${cy}" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="#1A2E4A" stroke-width="6" stroke-linecap="round"/>`;
+  const mx2 = cx + Math.sin(minAngle)*(r*0.8), my2 = cy - Math.cos(minAngle)*(r*0.8);
+  svg += `<line x1="${cx}" y1="${cy}" x2="${mx2.toFixed(1)}" y2="${my2.toFixed(1)}" stroke="#5BBFED" stroke-width="4" stroke-linecap="round"/>`;
+  svg += `<circle cx="${cx}" cy="${cy}" r="6" fill="#FF6B6B"/>`;
+  svg += `</svg>`;
+  return svg;
+}
+
+// ============================================================
+// GENERATE QUESTIONS
+// ============================================================
+function generateQuestions() {
+  questions = [];
+  for (let i = 0; i < totalQ; i++) questions.push(randomTime());
+}
+
+function shuffle(arr) {
+  for (let i = arr.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+// Returns romaji for a kana string that came from getFullReading().kana
+// We maintain a global kana→romaji map populated during question generation
+const kanaRomajiMap = new Map();
+
+function generateChoices(correctTime) {
+  const correctReading = getFullReading(correctTime);
+  const correct = correctReading.kana;
+  kanaRomajiMap.set(correct, correctReading.romaji);
+
+  const set = new Set([correct]);
+  let attempts = 0;
+  while (set.size < 4 && attempts < 60) {
+    const fake = randomTime();
+    const r = getFullReading(fake);
+    if (r.kana !== correct) {
+      set.add(r.kana);
+      kanaRomajiMap.set(r.kana, r.romaji);
+    }
+    attempts++;
+  }
+  return shuffle([...set]);
+}
+
+function kanaToRomaji(kana) {
+  return kanaRomajiMap.get(kana) || '';
+}
+
+// ============================================================
+// QUIZ FLOW
+// ============================================================
+function startQuiz() {
+  generateQuestions();
+  currentQ = 0; score = 0;
+  showScreen('quizScreen');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const time = questions[currentQ];
+
+  document.getElementById('quizCounter').textContent = `${currentQ+1} / ${totalQ}`;
+  document.getElementById('scoreDisplay').textContent = `★ ${score}`;
+  document.getElementById('progressBar').style.width = `${(currentQ/totalQ)*100}%`;
+
+  const clockArea = document.getElementById('clockArea');
+  if (level === 'easy') {
+    clockArea.style.background = 'white';
+    clockArea.innerHTML = `<div class="digital-clock">${formatDigital(time)}</div>`;
+  } else if (level === 'normal') {
+    clockArea.style.background = 'white';
+    clockArea.innerHTML = drawAnalogClock(time.h, time.m);
+  } else {
+    // Hard: show time-of-day scene as background illustration + clocks on top
+    const scene = getTimeOfDayScene(time.h);
+    clockArea.style.background = 'white';
+    clockArea.innerHTML = `
+      <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px;">
+        <div style="position:relative;width:240px;height:100px;">
+          ${scene.svg}
+          <div style="position:absolute;top:6px;left:8px;background:rgba(0,0,0,0.45);color:white;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;">
+            ${scene.emoji} ${scene.label}
+            <span class="en-sub" style="font-size:10px;font-weight:400;color:rgba(255,255,255,0.85)"> ${scene.labelEn}</span>
+          </div>
+        </div>
+        <div class="hybrid-wrap" style="margin-top:0;">
+          <div class="hybrid-digital">${formatDigital(time)}</div>
+          ${drawAnalogClock(time.h, time.m)}
+        </div>
+      </div>`;
+  }
+
+  const answerArea = document.getElementById('answerArea');
+
+  if (level === 'easy') {
+    // Multiple choice — with romaji subtitle in romaji/en mode
+    const choices = generateChoices(time);
+    const correct = getFullReading(time).kana;
+    // Build a map from kana → romaji for all choices
+    answerArea.innerHTML = `<div class="choices-grid">${choices.map(c => {
+      const romajiHint = kanaToRomaji(c);
+      return `<button class="choice-btn" onclick="checkChoiceAnswer(this,'${c}','${correct}')">
+        ${c}
+        <span class="romaji-sub" style="display:none;font-size:11px;font-weight:400;color:var(--sky);margin-top:2px;">${romajiHint}</span>
+      </button>`;
+    }).join('')}</div>`;
+    // Show romaji spans if in romaji/en mode
+    if (lang === 'romaji' || lang === 'en') {
+      answerArea.querySelectorAll('.romaji-sub').forEach(s => s.style.display = 'block');
+    }
+  } else if (level === 'normal') {
+    // Text input (hiragana, no am/pm)
+    selectedAmPm = null;
+    const correctObj = getFullReading(time);
+    const hint = buildHintText(time, false);
+    answerArea.innerHTML = `
+      <div class="text-input-wrap">
+        <div class="hint-text">${hint}</div>
+        <input class="kana-input" id="kanaInput" type="text" placeholder="ひらがなでかいてね" />
+        <button class="submit-btn" id="submitBtn" onclick="submitTextNormal()">こたえる ✓</button>
+      </div>`;
+    document.getElementById('kanaInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') submitTextNormal();
+    });
+  } else {
+    // Hard: am/pm selection + text input
+    selectedAmPm = null;
+    const hint = buildHintText(time, true);
+    answerArea.innerHTML = `
+      <div class="text-input-wrap">
+        <div class="hint-text">${hint}</div>
+        <div class="ampm-row">
+          <button class="ampm-btn" id="ampm-am" onclick="selectAmPm('am')">ごぜん<br><small style="font-weight:400;font-size:12px">AM</small></button>
+          <button class="ampm-btn" id="ampm-pm" onclick="selectAmPm('pm')">ごご<br><small style="font-weight:400;font-size:12px">PM</small></button>
+        </div>
+        <input class="kana-input" id="kanaInput" type="text" placeholder="れい）じゅうにじはん" />
+        <button class="submit-btn" id="submitBtn" onclick="submitTextHard()">こたえる ✓</button>
+      </div>`;
+    document.getElementById('kanaInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') submitTextHard();
+    });
+  }
+
+  document.getElementById('feedbackBox').style.display = 'none';
+  document.getElementById('hanNote').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'none';
+}
+
+function buildHintText(time, isHard) {
+  // Fixed examples — never use the actual answer
+  // Normal: show a few hiragana examples unrelated to current question
+  // Hard: same but remind about AM/PM button
+  const normalExamples = 'れい） さんじ、よじごふん、じゅういちじはん';
+  const hardExamples   = 'れい） くじ、にじさんじゅうごふん';
+  const enNormal = 'Type the reading in hiragana  e.g. sanji / yojigofun';
+  const enHard   = 'Select AM/PM above, then type in hiragana  e.g. kuji / nijisanjugofun';
+
+  if (isHard) {
+    return `ごぜん・ごごをえらんで、よみかたをひらがなでかいてね<br>
+      <span style="font-size:12px;color:var(--gray)">${hardExamples}</span><br>
+      <span class="en-sub block">${enHard}</span>`;
+  } else {
+    return `よみかたをひらがなでかいてね<br>
+      <span style="font-size:12px;color:var(--gray)">${normalExamples}</span><br>
+      <span class="en-sub block">${enNormal}</span>`;
+  }
+}
+
+function selectAmPm(v) {
+  selectedAmPm = v;
+  document.getElementById('ampm-am').classList.toggle('selected', v==='am');
+  document.getElementById('ampm-pm').classList.toggle('selected', v==='pm');
+}
+
+// ============================================================
+// ANSWER CHECKING
+// ============================================================
+function normalizeKana(s) {
+  return s.trim().replace(/\s|　/g,'').replace(/っ/g,'っ');
+}
+
+function checkChoiceAnswer(btn, chosen, correct) {
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+  const time = questions[currentQ];
+  const reading = getFullReading(time);
+  const alt30 = getAltReading30(time);
+  // accept: main reading, 8-minute alt (はっぷん), and 30-minute さんじゅっぷん alt
+  const isCorrect = chosen === correct
+    || (reading.altKana && chosen === reading.altKana)
+    || (alt30 && chosen === alt30.kana);
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    score++;
+    playCorrect();
+    showFeedback(true, time);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.choice-btn').forEach(b => {
+      if (b.textContent.trim() === correct) b.classList.add('correct');
+    });
+    showFeedback(false, time);
+  }
+  document.getElementById('nextBtn').style.display = 'block';
+}
+
+function submitTextNormal() {
+  const time = questions[currentQ];
+  const input = normalizeKana(document.getElementById('kanaInput').value);
+  const reading = getFullReading(time);
+  const correct = normalizeKana(reading.kana);
+  const alt8    = reading.altKana ? normalizeKana(reading.altKana) : null;
+  const alt30   = getAltReading30(time);
+  const alt30K  = alt30 ? normalizeKana(alt30.kana) : null;
+
+  const isCorrect = input === correct || (alt8 && input === alt8) || (alt30K && input === alt30K);
+
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('kanaInput').disabled = true;
+
+  if (isCorrect) { score++; playCorrect(); showFeedback(true, time); }
+  else { showFeedback(false, time); }
+  document.getElementById('nextBtn').style.display = 'block';
+}
+
+function submitTextHard() {
+  const time = questions[currentQ];
+  const input = normalizeKana(document.getElementById('kanaInput').value);
+  const hardReading = getFullReadingHard(time);
+  const correct  = normalizeKana(hardReading.kana);
+  const alt8     = hardReading.altKana ? normalizeKana(hardReading.altKana) : null;
+  // 30分 alt (さんじゅっぷん, no ampm prefix since user types only hour+min)
+  const alt30 = getAltReading30(time);
+  const alt30K = alt30 ? normalizeKana(alt30.kana) : null;
+
+  const ampmCorrect = time.h < 12 ? 'am' : 'pm';
+  const textOk = input === correct || (alt8 && input === alt8) || (alt30K && input === alt30K);
+  const isCorrect = textOk && selectedAmPm === ampmCorrect;
+
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('kanaInput').disabled = true;
+
+  if (isCorrect) { score++; playCorrect(); showFeedback(true, time); }
+  else { showFeedback(false, time); }
+  document.getElementById('nextBtn').style.display = 'block';
+}
+
+function showFeedback(ok, time) {
+  const fb = document.getElementById('feedbackBox');
+  const hn = document.getElementById('hanNote');
+
+  const reading = level === 'hard' ? getFullReadingHard(time) : getFullReading(time);
+  const alt30 = getAltReading30(time);
+  // For hard mode feedback display, show ごぜん/ごご + answer
+  const ampmPrefix = level === 'hard' ? (time.h < 12 ? 'ごぜん　' : 'ごご　') : '';
+  const displayKana = ampmPrefix + reading.kana;
+
+  // collect all valid alternate kana for "または" display
+  const alts = [];
+  if (reading.altKana) alts.push(ampmPrefix + reading.altKana);
+  if (alt30) alts.push(ampmPrefix + alt30.kana);
+
+  if (ok) {
+    fb.className = 'feedback-box correct';
+    const praise =   ['すごい！','やったね！','かんぺき！','せいかい！','ブラボー！','よくできました！'];
+    const praiseEn = ['Amazing!', 'You got it!','Perfect!',  'Correct!',  'Bravo!',   'Well done!'];
+    const i = Math.floor(Math.random()*praise.length);
+    fb.innerHTML = `✅ <strong>${praise[i]}</strong> <span class="en-sub">${praiseEn[i]}</span>`;
+    if (lang !== 'ja') {
+      fb.innerHTML += `<br><span class="romaji-sub" style="font-size:13px">▶ ${reading.romaji}</span>`;
+    }
+  } else {
+    fb.className = 'feedback-box wrong';
+    fb.innerHTML = `❌ せいかいは <strong>「${displayKana}」</strong> だよ！`;
+    if (alts.length > 0) {
+      fb.innerHTML += `<br><small style="font-weight:500">または「${alts.join('」「')}」</small>`;
+    }
+    fb.innerHTML += `<br><span class="en-sub block">Correct answer: "${displayKana}"</span>`;
+    fb.innerHTML += `<span class="romaji-sub" style="font-size:13px">▶ ${reading.romaji}</span>`;
+  }
+  fb.style.display = 'block';
+
+  // ちょうど tip for :00
+  if (time.m === 0) {
+    const ex = readHour(time.h);
+    hn.innerHTML = `💡 <strong>ポイント：</strong>「${ex}」は「${ex}<span style="color:var(--coral)">ちょうど</span>」ともいえます！<br>
+      <span style="font-size:13px;font-weight:400">「ちょうど」＝ きっかり、という意味。でも答えは「${ex}」だけでも正解！</span><br>
+      <span class="en-sub block" style="font-size:12px;font-weight:400">Tip: You can also say "${ex} choudo" (exactly on the hour), but "${ex}" alone is correct!</span>`;
+    hn.style.display = 'block';
+  // はん tip for :30
+  } else if (time.m === 30) {
+    const ex = readHour(time.h);
+    hn.innerHTML = `💡 <strong>ポイント：</strong>「${ex}さんじゅっぷん」は「${ex}<span style="color:var(--coral);font-size:1.1em">はん</span>」ともいいます！<br>
+      <span style="font-size:13px;font-weight:400">「はん（半）」＝30分 のこと。どちらも正解！</span><br>
+      <span class="en-sub block" style="font-size:12px;font-weight:400">Tip: "han" (半) means "half past"! Both readings are correct.</span>
+      <span class="romaji-sub" style="font-size:12px">han = 30 minutes (half past)</span>`;
+    hn.style.display = 'block';
+  // はちふん tip for :_8
+  } else if (time.m % 10 === 8) {
+    const minR = buildMinuteReading(time.m);
+    const ex = readHour(time.h);
+    hn.innerHTML = `💡 <strong>ポイント：</strong>「${ex}${minR.kana}」は「${ex}${minR.altKana}」ともいいます！<br>
+      <span style="font-size:13px;font-weight:400">どちらも正解！（「はっぷん」は話し言葉でよく使われます）</span><br>
+      <span class="en-sub block" style="font-size:12px;font-weight:400">Tip: Both "${minR.kana}" and "${minR.altKana}" are accepted!</span>`;
+    hn.style.display = 'block';
+  } else {
+    hn.style.display = 'none';
+  }
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= totalQ) showResult();
+  else renderQuestion();
+}
+
+function goHome() { showScreen('homeScreen'); }
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ============================================================
+// SOUND & CONFETTI
+// ============================================================
+function playCorrect() {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [523,659,784].forEach((freq,i) => {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq; osc.type = 'sine';
+      gain.gain.setValueAtTime(0.28, ctx.currentTime + i*0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.12 + 0.3);
+      osc.start(ctx.currentTime + i*0.12);
+      osc.stop(ctx.currentTime + i*0.12 + 0.35);
+    });
+  } catch(e){}
+  launchConfetti(60);
+}
+
+function launchConfetti(count) {
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const colors = ['#5BBFED','#FFD93D','#FF6B6B','#6BCFC0','#A78BFA','#FB923C'];
+  const pieces = Array.from({length:count}, () => ({
+    x: Math.random()*canvas.width, y: -20,
+    w: 7+Math.random()*9, h: 5+Math.random()*5,
+    color: colors[Math.floor(Math.random()*colors.length)],
+    vx: (Math.random()-0.5)*5, vy: 2+Math.random()*4,
+    r: Math.random()*Math.PI*2, vr: (Math.random()-0.5)*0.25
+  }));
+  let frame;
+  const draw = () => {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p => {
+      p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; p.vy+=0.09;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+      ctx.fillStyle=p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    });
+    if (pieces.some(p=>p.y<canvas.height+20)) frame = requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  };
+  if (frame) cancelAnimationFrame(frame);
+  draw();
+  setTimeout(()=>{cancelAnimationFrame(frame);ctx.clearRect(0,0,canvas.width,canvas.height);},2500);
+}
+
+// ============================================================
+// RESULT
+// ============================================================
+function showResult() {
+  showScreen('resultScreen');
+  const pct = Math.round(score/totalQ*100);
+  document.getElementById('resCorrect').textContent = score;
+  document.getElementById('resTotal').textContent = totalQ;
+  document.getElementById('resPercent').textContent = pct + '%';
+
+  let emoji, title, stars, msg;
+  if (pct === 100) {
+    emoji='🏆'; title='まんてん！'; stars='⭐⭐⭐';
+    msg=`かんぺき！きみは<br><strong>じかんマスター</strong>だ！🎊<br><span class="en-sub block">Perfect! You're a Time Master!</span>`;
+    bigCelebration();
+  } else if (pct >= 70) {
+    emoji='🌟'; title='もうすこし！'; stars='⭐⭐';
+    msg=`あと少しで まんてん！<br>もう一回でいけるよ！💪<br><span class="en-sub block">So close to perfect! Try once more!</span>`;
+  } else if (pct >= 40) {
+    emoji='💪'; title='がんばれ！'; stars='⭐';
+    msg=`練習すれば かならずできる！<br>あきらめないで！🌈<br><span class="en-sub block">Keep practicing! You'll get there!</span>`;
+  } else {
+    emoji='🌈'; title='もう一度！'; stars='';
+    msg=`むずかしかったね。<br>いっしょに れんしゅうしよう！😊<br><span class="en-sub block">Keep trying — you can do it!</span>`;
+  }
+
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultTitle').innerHTML = title;
+  document.getElementById('resStars').textContent = stars;
+  document.getElementById('resultMsg').innerHTML = msg;
+}
+
+function bigCelebration() {
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const colors = ['#5BBFED','#FFD93D','#FF6B6B','#6BCFC0','#A78BFA','#FB923C'];
+  const pieces = Array.from({length:180}, () => ({
+    x: Math.random()*canvas.width, y: Math.random()*canvas.height/2-20,
+    w: 6+Math.random()*12, h: 5+Math.random()*6,
+    color: colors[Math.floor(Math.random()*colors.length)],
+    vx: (Math.random()-0.5)*7, vy: -4+Math.random()*6,
+    r: Math.random()*Math.PI*2, vr: (Math.random()-0.5)*0.35
+  }));
+  let f2;
+  const draw2 = () => {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p => {
+      p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; p.vy+=0.1;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+      ctx.fillStyle=p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    });
+    if (pieces.some(p=>p.y<canvas.height+30)) f2=requestAnimationFrame(draw2);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  };
+  draw2();
+  setTimeout(()=>{cancelAnimationFrame(f2);ctx.clearRect(0,0,canvas.width,canvas.height);},4500);
+  try {
+    const ac = new (window.AudioContext||window.webkitAudioContext)();
+    [523,659,784,1047,1319].forEach((f,i) => {
+      const o=ac.createOscillator(), g=ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      o.frequency.value=f; o.type='sine';
+      g.gain.setValueAtTime(0.22, ac.currentTime+i*0.14);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+i*0.14+0.5);
+      o.start(ac.currentTime+i*0.14); o.stop(ac.currentTime+i*0.14+0.55);
+    });
+  } catch(e){}
+}
+
+function retryQuiz() {
+  generateQuestions(); currentQ=0; score=0;
+  showScreen('quizScreen'); renderQuestion();
+}
+</script>
+</body>
+</html>
