@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>助詞クイズ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Fredoka+One&family=DM+Sans:wght@400;500;600&display=swap');
+:root{--sky:#E8F4FD;--ocean:#2B7FBF;--coral:#FF6B6B;--mint:#4ECDC4;--sun:#FFD93D;--sun-light:#FFF8E1;--lav:#A855F7;--lav-light:#F3E8FF;--ink:#1A1A2E;--ink-soft:#3D3D5C;--gray:#8892A4;--gray-light:#F0F2F7;--white:#FFFFFF;--ok:#22C55E;--ok-light:#DCFCE7;--ng:#EF4444;--ng-light:#FEE2E2;--r:16px;--rs:10px;--sh:0 8px 32px rgba(43,127,191,0.15);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans','Noto Sans JP',sans-serif;background:linear-gradient(135deg,#E8F4FD 0%,#F3E8FF 50%,#E8FAF9 100%);min-height:100vh;color:var(--ink);overflow-x:hidden;}
+.app{max-width:680px;margin:0 auto;padding:20px 16px 80px;}
+.screen{display:none;}
+.screen.active{display:block;animation:fadeIn 0.35s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.card{background:var(--white);border-radius:var(--r);padding:28px 24px;box-shadow:var(--sh);margin-bottom:16px;}
+.home-header{text-align:center;padding:32px 0 24px;}
+.logo{font-family:'Fredoka One',cursive;font-size:2.6rem;background:linear-gradient(135deg,var(--ocean),var(--lav));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;}
+.logo-sub{font-size:0.95rem;color:var(--ink-soft);margin-top:6px;font-weight:500;}
+.particles-row{display:flex;justify-content:center;gap:8px;margin-top:18px;flex-wrap:wrap;}
+.p-badge{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans JP',sans-serif;font-weight:900;font-size:1.2rem;}
+.p-badge:nth-child(1){background:linear-gradient(135deg,#FFE8E8,#FFCDD2);color:var(--coral);}
+.p-badge:nth-child(2){background:linear-gradient(135deg,#E8FAF9,#B2EBF2);color:var(--mint);}
+.p-badge:nth-child(3){background:linear-gradient(135deg,#FFF8E1,#FFE082);color:#E6A817;}
+.p-badge:nth-child(4){background:linear-gradient(135deg,var(--sky),#BBDEFB);color:var(--ocean);}
+.p-badge:nth-child(5){background:linear-gradient(135deg,var(--lav-light),#E1BEE7);color:var(--lav);}
+.sec-title{font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray);margin-bottom:10px;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--gray-light);}
+.settings-row:last-child{border-bottom:none;}
+.s-label{font-weight:600;font-size:0.95rem;color:var(--ink-soft);}
+.s-label-en{font-size:0.74rem;color:var(--gray);display:block;}
+.toggle{width:52px;height:28px;background:var(--gray-light);border-radius:14px;position:relative;cursor:pointer;transition:background 0.3s;border:none;flex-shrink:0;}
+.toggle.on{background:linear-gradient(135deg,var(--ocean),var(--mint));}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;background:white;border-radius:50%;transition:transform 0.3s;box-shadow:0 2px 6px rgba(0,0,0,0.2);}
+.toggle.on::after{transform:translateX(24px);}
+.count-ctrl{display:flex;align-items:center;gap:12px;}
+.cnt-btn{width:34px;height:34px;border-radius:50%;border:2px solid var(--ocean);background:white;color:var(--ocean);font-size:1.1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.cnt-btn:hover{background:var(--ocean);color:white;}
+.cnt-num{font-size:1.3rem;font-weight:700;color:var(--ocean);min-width:28px;text-align:center;}
+.level-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.lvl-btn{padding:14px 8px;border-radius:var(--rs);border:2px solid var(--gray-light);background:white;cursor:pointer;text-align:center;transition:all 0.25s;font-family:inherit;}
+.lvl-btn:hover{border-color:var(--ocean);transform:translateY(-2px);}
+.lvl-btn.sel{border-color:var(--ocean);background:linear-gradient(135deg,var(--sky),#E8F4FD);}
+.lvl-icon{font-size:1.5rem;margin-bottom:4px;}
+.lvl-name{font-weight:700;font-size:0.9rem;color:var(--ink);display:block;}
+.lvl-sub{font-size:0.72rem;color:var(--gray);display:block;}
+.btn-primary{width:100%;padding:16px;border-radius:var(--rs);border:none;background:linear-gradient(135deg,var(--ocean),var(--lav));color:white;font-size:1.05rem;font-weight:700;cursor:pointer;transition:all 0.25s;box-shadow:0 4px 16px rgba(43,127,191,0.35);font-family:inherit;}
+.btn-primary:hover{transform:translateY(-2px);}
+.nav-links{display:flex;justify-content:center;gap:12px;margin-top:12px;}
+.nav-link{font-size:0.82rem;color:var(--ocean);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit;}
+.screen-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.btn-back{width:38px;height:38px;border-radius:50%;background:var(--gray-light);border:none;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;}
+.btn-back:hover{background:var(--sky);}
+.scr-title{font-size:1.3rem;font-weight:700;}
+.scr-sub{font-size:0.8rem;color:var(--gray);}
+.p-card{border-radius:var(--rs);padding:16px;margin-bottom:12px;border:1.5px solid;}
+.p-card-ha{border-color:#FFCDD2;background:#FFF5F5;}
+.p-card-ga{border-color:#B2EBF2;background:#F0FBFC;}
+.p-card-wo{border-color:#FFE082;background:#FFFDE7;}
+.p-card-ni{border-color:#BBDEFB;background:#F0F7FF;}
+.p-card-de{border-color:#E1BEE7;background:#F9F0FF;}
+.p-title{font-size:1.4rem;font-weight:900;font-family:'Noto Sans JP',sans-serif;margin-bottom:4px;}
+.p-desc{font-size:0.85rem;color:var(--ink-soft);margin-bottom:8px;font-weight:500;}
+.p-ex{font-size:0.85rem;padding:6px 10px;background:rgba(255,255,255,0.7);border-radius:8px;margin-top:4px;line-height:1.8;}
+.p-ex .ja{font-family:'Noto Sans JP',sans-serif;font-weight:500;}
+.p-ex .en{color:var(--gray);font-size:0.78rem;}
+.p-ex .roma{color:var(--ocean);font-size:0.76rem;}
+.rule-step{display:flex;gap:14px;align-items:flex-start;margin-bottom:12px;padding:14px;background:var(--gray-light);border-radius:var(--rs);}
+.step-n{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--ocean),var(--lav));color:white;font-weight:700;font-size:0.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-t{font-size:0.88rem;line-height:1.6;}
+.step-en{font-size:0.76rem;color:var(--gray);}
+.quiz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.prog-wrap{flex:1;margin:0 12px;}
+.prog-bar{height:8px;background:var(--gray-light);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--ocean),var(--mint));border-radius:4px;transition:width 0.4s ease;}
+.prog-nums{font-size:0.78rem;color:var(--gray);text-align:center;margin-top:3px;}
+.score-badge{padding:4px 12px;background:var(--sun-light);border-radius:20px;font-weight:700;font-size:0.9rem;color:#B7860A;border:1.5px solid var(--sun);white-space:nowrap;}
+.q-card{text-align:center;padding:32px 24px;}
+.q-sentence{font-family:'Noto Sans JP',sans-serif;font-size:1.4rem;font-weight:500;line-height:1.9;margin-bottom:8px;}
+.q-hi{font-weight:900;color:var(--coral);font-size:1.5rem;text-decoration:underline;text-decoration-color:var(--coral);text-underline-offset:4px;}
+.q-roma{font-size:0.82rem;color:var(--ocean);margin-bottom:8px;}
+.btn-meaning{font-size:0.8rem;padding:5px 14px;border-radius:20px;border:1.5px solid var(--ocean);background:white;color:var(--ocean);cursor:pointer;font-family:inherit;margin-top:4px;}
+.q-meaning{font-size:0.85rem;color:var(--ink-soft);margin-top:8px;font-style:italic;}
+.choice-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.choice-btn{padding:14px 12px;border-radius:var(--rs);border:2px solid var(--gray-light);background:white;font-size:0.95rem;font-weight:600;cursor:pointer;transition:all 0.25s;font-family:'Noto Sans JP','DM Sans',sans-serif;}
+.choice-btn:hover:not(:disabled){border-color:var(--ocean);background:var(--sky);}
+.choice-btn.ch-ok{border-color:var(--ok);background:var(--ok-light);color:var(--ok);}
+.choice-btn.ch-ng{border-color:var(--ng);background:var(--ng-light);color:var(--ng);}
+.choice-btn:disabled{cursor:default;}
+.step2-wrap{display:none;margin-top:14px;}
+.step2-prompt{font-size:0.9rem;font-weight:600;color:var(--ocean);text-align:center;margin:6px 0;}
+.p-choices{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px;}
+.p-choice{width:52px;height:52px;border-radius:12px;border:2px solid var(--gray-light);background:white;font-family:'Noto Sans JP',sans-serif;font-size:1.2rem;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;}
+.p-choice:hover:not(:disabled){border-color:var(--ocean);background:var(--sky);transform:scale(1.08);}
+.p-choice.pc-ok{border-color:var(--ok);background:var(--ok-light);color:var(--ok);}
+.p-choice.pc-ng{border-color:var(--ng);background:var(--ng-light);color:var(--ng);}
+.p-choice:disabled{cursor:default;}
+.verdict{padding:14px;border-radius:var(--rs);margin-top:12px;display:none;}
+.verdict.show{display:block;animation:popIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275);}
+@keyframes popIn{from{transform:scale(0.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+.verdict.v-ok{background:var(--ok-light);border:1.5px solid var(--ok);}
+.verdict.v-ng{background:var(--ng-light);border:1.5px solid var(--ng);}
+.v-head{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.v-icon{font-size:1.2rem;font-weight:900;}
+.v-text{font-weight:700;font-size:0.95rem;}
+.v-corrected{font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:1rem;color:var(--ok);margin:6px 0;}
+.v-exp{font-size:0.82rem;color:var(--ink-soft);margin-top:4px;line-height:1.6;}
+.btn-next{width:100%;padding:14px;border-radius:var(--rs);border:none;background:linear-gradient(135deg,var(--ocean),var(--mint));color:white;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.25s;margin-top:12px;font-family:inherit;}
+.btn-next:hover{transform:translateY(-2px);}
+.btn-secondary{padding:10px 20px;border-radius:var(--rs);border:2px solid var(--ocean);background:white;color:var(--ocean);font-size:0.9rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-secondary:disabled{opacity:0.4;cursor:default;}
+.result-hero{text-align:center;padding:36px 20px 24px;}
+.result-score-num{font-family:'Fredoka One',cursive;font-size:3.5rem;background:linear-gradient(135deg,var(--ocean),var(--lav));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.result-max{font-size:1rem;color:var(--gray);}
+.result-stars{font-size:1.1rem;margin:12px 0;font-weight:700;color:var(--ocean);}
+.result-msg{font-size:1.1rem;font-weight:700;margin:8px 0 4px;color:var(--ink);}
+.result-sub{font-size:0.85rem;color:var(--ink-soft);line-height:1.6;}
+.result-actions{display:flex;flex-direction:column;gap:10px;}
+.btn-replay{padding:15px;border-radius:var(--rs);border:none;background:linear-gradient(135deg,var(--coral),#FF8E53);color:white;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-pdf{padding:13px;border-radius:var(--rs);border:2px solid var(--ocean);background:white;color:var(--ocean);font-size:1rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-pdf:hover{background:var(--sky);}
+.btn-home-r{padding:13px;border-radius:var(--rs);border:2px solid var(--ocean);background:white;color:var(--ocean);font-size:1rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.bk-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-light);font-size:0.85rem;}
+.bk-row:last-child{border-bottom:none;}
+.bk-dot{width:8px;height:8px;border-radius:50%;margin-right:8px;flex-shrink:0;display:inline-block;}
+.confetti-wrap{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;}
+.confetto{position:absolute;border-radius:2px;animation:cfFall linear forwards;}
+@keyframes cfFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}
+/* PDF MODAL */
+@media print{body>*{display:none!important;}#pdf-modal{display:block!important;position:static!important;background:none!important;overflow:visible!important;}#pdf-inner{border-radius:0!important;margin:0!important;padding:16px!important;}#pdf-modal-actions{display:none!important;}}
+#pdf-modal{display:none;position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.65);overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#pdf-modal.open{display:block;}
+#pdf-inner{background:white;max-width:680px;margin:16px auto 40px;border-radius:16px;padding:24px 20px 28px;position:relative;}
+#pdf-modal-actions{position:sticky;bottom:0;background:white;border-top:1px solid #eee;padding:14px 0 0;margin-top:20px;display:flex;flex-direction:column;gap:10px;align-items:center;}
+.pdf-print-btn{padding:13px 32px;background:linear-gradient(135deg,#2B7FBF,#A855F7);color:white;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;width:100%;}
+.pdf-close-btn{padding:10px;background:none;border:none;color:#888;font-size:0.85rem;cursor:pointer;font-family:inherit;}
+</style>
+</head>
+<body>
+<div id="confetti-wrap" class="confetti-wrap"></div>
+<div class="app">
+
+<!-- HOME -->
+<div id="screen-home" class="screen active">
+  <div class="home-header">
+    <div class="logo">助詞クイズ</div>
+    <div class="logo-sub">Particle Quiz &mdash; おかしな助詞はどれかな？</div>
+    <div class="particles-row">
+      <div class="p-badge">は</div>
+      <div class="p-badge">が</div>
+      <div class="p-badge">を</div>
+      <div class="p-badge">に</div>
+      <div class="p-badge">で</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec-title">Settings / せってい</div>
+    <div class="settings-row">
+      <div>
+        <span class="s-label">ふりがなモード</span>
+        <span class="s-label-en">Furigana (romaji) Mode</span>
+      </div>
+      <button class="toggle" id="toggle-furigana" type="button"></button>
+    </div>
+    <div class="settings-row">
+      <div>
+        <span class="s-label">問題数 / Questions</span>
+        <span class="s-label-en">Number of questions per round</span>
+      </div>
+      <div class="count-ctrl">
+        <button class="cnt-btn" id="btn-minus" type="button">-</button>
+        <span class="cnt-num" id="count-display">10</span>
+        <button class="cnt-btn" id="btn-plus" type="button">+</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec-title">Difficulty / むずかしさ</div>
+    <div class="level-grid">
+      <button class="lvl-btn sel" id="lvl-N5" type="button">
+        <div class="lvl-icon">&#127793;</div>
+        <span class="lvl-name">初級</span>
+        <span class="lvl-sub">Beginner &middot; N5</span>
+      </button>
+      <button class="lvl-btn" id="lvl-N4" type="button">
+        <div class="lvl-icon">&#127807;</div>
+        <span class="lvl-name">中級</span>
+        <span class="lvl-sub">Intermediate &middot; N4</span>
+      </button>
+      <button class="lvl-btn" id="lvl-N3" type="button">
+        <div class="lvl-icon">&#127795;</div>
+        <span class="lvl-name">上級</span>
+        <span class="lvl-sub">Advanced &middot; N3</span>
+      </button>
+    </div>
+  </div>
+  <button class="btn-primary" id="btn-start" type="button">クイズをはじめる / Start Quiz</button>
+  <div class="nav-links">
+    <button class="nav-link" id="btn-rules" type="button">助詞リスト &amp; ルール / Particle List &amp; Rules</button>
+  </div>
+</div>
+
+<!-- RULES -->
+<div id="screen-rules" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" id="btn-rules-back" type="button">&larr;</button>
+    <div>
+      <div class="scr-title">助詞リスト / Particle Guide</div>
+      <div class="scr-sub">使い方を確認しよう / Review how particles work</div>
+    </div>
+  </div>
+  <div class="p-card p-card-ha">
+    <div class="p-title" style="color:#E53E3E;">は <span style="font-size:0.65em;font-family:sans-serif;font-weight:400;color:#999;">wa</span></div>
+    <div class="p-desc">何について話すか（話題・対比）<br><span style="color:#888;">Topic marker / Contrast</span></div>
+    <div class="p-ex"><span class="ja">私<b>は</b>学生です。</span><br><span class="roma">Watashi wa gakusei desu.</span><br><span class="en">As for me, I'm a student.</span></div>
+  </div>
+  <div class="p-card p-card-ga">
+    <div class="p-title" style="color:#00897B;">が <span style="font-size:0.65em;font-family:sans-serif;font-weight:400;color:#999;">ga</span></div>
+    <div class="p-desc">誰・何がそうなのか（主語・焦点）<br><span style="color:#888;">Subject marker / Focus</span></div>
+    <div class="p-ex"><span class="ja">猫<b>が</b>います。</span><br><span class="roma">Neko ga imasu.</span><br><span class="en">There is a cat.</span></div>
+    <div class="p-ex"><span class="ja">犬<b>が</b>好きです。</span><br><span class="roma">Inu ga suki desu.</span><br><span class="en">I like dogs.</span></div>
+  </div>
+  <div class="p-card p-card-wo">
+    <div class="p-title" style="color:#D69E2E;">を <span style="font-size:0.65em;font-family:sans-serif;font-weight:400;color:#999;">wo</span></div>
+    <div class="p-desc">動作の対象・通過・離脱点<br><span style="color:#888;">Direct object / Route / Departure</span></div>
+    <div class="p-ex"><span class="ja">コーヒー<b>を</b>飲みます。</span><br><span class="roma">Koohii o nomimasu.</span><br><span class="en">I drink coffee.</span></div>
+    <div class="p-ex"><span class="ja">公園<b>を</b>散歩する。</span><br><span class="roma">Kooen o sanpo suru.</span><br><span class="en">Walk through the park.</span></div>
+  </div>
+  <div class="p-card p-card-ni">
+    <div class="p-title" style="color:#2B7FBF;">に <span style="font-size:0.65em;font-family:sans-serif;font-weight:400;color:#999;">ni</span></div>
+    <div class="p-desc">到達点・時点・存在場所・相手<br><span style="color:#888;">Destination / Time / Existence / Recipient</span></div>
+    <div class="p-ex"><span class="ja">学校<b>に</b>行く。</span><br><span class="roma">Gakkoo ni iku.</span><br><span class="en">Go to school.</span></div>
+    <div class="p-ex"><span class="ja">7時<b>に</b>起きる。</span><br><span class="roma">Shichi-ji ni okiru.</span><br><span class="en">Wake up at 7.</span></div>
+    <div class="p-ex"><span class="ja">友だち<b>に</b>話す。</span><br><span class="roma">Tomodachi ni hanasu.</span><br><span class="en">Talk to a friend.</span></div>
+  </div>
+  <div class="p-card p-card-de">
+    <div class="p-title" style="color:#7B3FBF;">で <span style="font-size:0.65em;font-family:sans-serif;font-weight:400;color:#999;">de</span></div>
+    <div class="p-desc">動作の場所・手段・道具<br><span style="color:#888;">Action location / Means / Tool</span></div>
+    <div class="p-ex"><span class="ja">家<b>で</b>勉強する。</span><br><span class="roma">Ie de benkyoo suru.</span><br><span class="en">Study at home.</span></div>
+    <div class="p-ex"><span class="ja">バス<b>で</b>行く。</span><br><span class="roma">Basu de iku.</span><br><span class="en">Go by bus.</span></div>
+    <div class="p-ex"><span class="ja">日本語<b>で</b>話す。</span><br><span class="roma">Nihongo de hanasu.</span><br><span class="en">Speak in Japanese.</span></div>
+  </div>
+  <div class="card">
+    <div class="sec-title">How to Play / あそびかた</div>
+    <div class="rule-step"><div class="step-n">1</div><div class="step-t">文の中の助詞が正しいか判断しよう<br><span class="step-en">Decide if the particle is correct or not</span></div></div>
+    <div class="rule-step"><div class="step-n">2</div><div class="step-t">「正しい」または「間違っている」を選んでね<br><span class="step-en">Choose Correct or Wrong</span></div></div>
+    <div class="rule-step"><div class="step-n">3</div><div class="step-t">間違っている場合は正しい助詞を選ぼう<br><span class="step-en">If wrong, pick the correct particle</span></div></div>
+  </div>
+  <button class="btn-primary" id="btn-rules-home" type="button">ホームにもどる / Back to Home</button>
+</div>
+
+<!-- QUIZ -->
+<div id="screen-quiz" class="screen">
+  <div class="quiz-top">
+    <button class="btn-back" id="btn-quiz-home" type="button" title="ホームへ">&#8962;</button>
+    <div class="prog-wrap">
+      <div class="prog-bar"><div class="prog-fill" id="quiz-prog"></div></div>
+      <div class="prog-nums" id="quiz-nums">1 / 10</div>
+    </div>
+    <div class="score-badge" id="score-badge">0 pt</div>
+  </div>
+  <div class="card q-card">
+    <div id="q-sentence" class="q-sentence"></div>
+    <div id="q-roma" class="q-roma"></div>
+    <button class="btn-meaning" id="btn-meaning" type="button">Show meaning</button>
+    <div id="q-meaning" class="q-meaning" style="display:none;"></div>
+  </div>
+  <div class="card">
+    <div class="sec-title" style="margin-bottom:12px;">この文は正しい？ / Is this correct?</div>
+    <div class="choice-row" id="step1-row">
+      <button class="choice-btn" id="btn-ch-ok" type="button">&#10003; 正しい<br><small>Correct</small></button>
+      <button class="choice-btn" id="btn-ch-ng" type="button">&#10007; 間違っている<br><small>Wrong</small></button>
+    </div>
+    <div class="step2-wrap" id="step2-wrap">
+      <div class="step2-prompt">正しい助詞はどれ？ / Which particle is correct?</div>
+      <div class="p-choices" id="p-choices"></div>
+    </div>
+    <div class="verdict" id="verdict">
+      <div class="v-head">
+        <span class="v-icon" id="v-icon"></span>
+        <span class="v-text" id="v-text"></span>
+      </div>
+      <div class="v-corrected" id="v-corrected"></div>
+      <div class="v-exp" id="v-exp"></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <button class="btn-secondary" id="btn-prev" type="button" disabled>&larr; もどる</button>
+    <button class="btn-next" id="btn-next" type="button" style="display:none;">つぎへ / Next &rarr;</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="screen-result" class="screen">
+  <div class="card result-hero">
+    <div style="font-size:2.5rem;margin-bottom:8px;" id="r-emoji"></div>
+    <div><span class="result-score-num" id="r-score"></span><span class="result-max" id="r-max"></span></div>
+    <div class="result-stars" id="r-stars"></div>
+    <div class="result-msg" id="r-msg"></div>
+    <div class="result-sub" id="r-sub"></div>
+  </div>
+  <div class="card">
+    <div class="sec-title">Results Breakdown</div>
+    <div id="breakdown"></div>
+  </div>
+  <div class="card result-actions">
+    <button class="btn-replay" id="btn-replay" type="button">もう一度！ Same Quiz</button>
+    <button class="btn-pdf" id="btn-pdf" type="button">復習レポートを見る / Review Report</button>
+    <button class="btn-home-r" id="btn-result-home" type="button">ホームにもどる / Home</button>
+  </div>
+</div>
+
+</div>
+
+<!-- PDF MODAL -->
+<div id="pdf-modal">
+  <div id="pdf-inner">
+    <div id="pdf-content"></div>
+    <div id="pdf-modal-actions">
+      <button class="pdf-print-btn" id="pdf-print-btn" type="button">🖨 印刷 / プリント (PDF保存)</button>
+      <div style="background:#E8F4FD;border:1.5px solid #2B7FBF;border-radius:10px;padding:12px 14px;font-size:0.82rem;color:#1A3A5C;line-height:1.9;text-align:left;width:100%;">
+        <b>💡 保存方法</b><br>
+        <b>Safari / PCブラウザ：</b>「印刷」ボタン → 「PDFに保存」<br>
+        <b>iPhone / iPad：</b>「印刷」→ 共有ボタン →「PDFを作成」<br>
+        <b>スクリーンショット：</b><br>
+        iPhone：サイドボタン＋音量上を同時押し<br>
+        iPad：トップボタン＋音量上を同時押し
+      </div>
+      <button class="pdf-close-btn" id="pdf-close-btn" type="button">× 閉じる / Close</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+"use strict";
+var PTCLS=["は","が","を","に","で"];
+
+// ===== QUESTION BANK =====
+// Each question has:
+//   ja: full sentence
+//   hi: [start, end] char index of the TARGET particle to highlight
+//   p:  the particle shown (may be wrong)
+//   cp: correct particle (null if ok=true)
+//   ok: true = sentence is correct
+//   roma, en, exp
+
+var DB={
+N5:[
+// --- CORRECT ---
+{ja:"水を飲みます。",hi:[1,2],roma:"Mizu o nomimasu.",en:"I drink water.",ok:true,p:"を",cp:null,exp:"を marks the direct object. 水 is what is being drunk."},
+{ja:"学校に行きます。",hi:[2,3],roma:"Gakkoo ni ikimasu.",en:"I go to school.",ok:true,p:"に",cp:null,exp:"に marks destination. You go TO (に) school."},
+{ja:"家で食べます。",hi:[1,2],roma:"Ie de tabemasu.",en:"I eat at home.",ok:true,p:"で",cp:null,exp:"で marks where the action takes place. Eating happens AT (で) home."},
+{ja:"7時に起きます。",hi:[2,3],roma:"Shichi-ji ni okimasu.",en:"I wake up at 7.",ok:true,p:"に",cp:null,exp:"に marks specific times. You wake up AT (に) 7 o'clock."},
+{ja:"音楽を聴きます。",hi:[2,3],roma:"Ongaku o kikimasu.",en:"I listen to music.",ok:true,p:"を",cp:null,exp:"を marks 音楽 as the direct object of 聴く."},
+{ja:"友だちに電話します。",hi:[3,4],roma:"Tomodachi ni denwa shimasu.",en:"I call a friend.",ok:true,p:"に",cp:null,exp:"に marks the recipient. You call TO (に) your friend."},
+{ja:"バスで行きます。",hi:[2,3],roma:"Basu de ikimasu.",en:"I go by bus.",ok:true,p:"で",cp:null,exp:"で marks means. You go BY (で) bus."},
+{ja:"図書館で勉強します。",hi:[3,4],roma:"Toshokan de benkyoo shimasu.",en:"I study at the library.",ok:true,p:"で",cp:null,exp:"で marks where the action takes place."},
+{ja:"本を読みます。",hi:[1,2],roma:"Hon o yomimasu.",en:"I read a book.",ok:true,p:"を",cp:null,exp:"を marks 本 as the direct object of 読む."},
+{ja:"鳥が空を飛んでいます。",hi:[1,2],roma:"Tori ga sora o tonde imasu.",en:"A bird is flying in the sky.",ok:true,p:"が",cp:null,exp:"が marks 鳥 as the subject performing the action."},
+{ja:"毎日学校に行きます。",hi:[4,5],roma:"Mainichi gakkoo ni ikimasu.",en:"I go to school every day.",ok:true,p:"に",cp:null,exp:"に marks destination with movement verbs like 行く. You go TO (に) school."},
+{ja:"教室で授業があります。",hi:[2,3],roma:"Kyooshitsu de jugyoo ga arimasu.",en:"There is class in the classroom.",ok:true,p:"で",cp:null,exp:"で marks the location where something takes place."},
+// --- WRONG ---
+{ja:"学校で行きます。",hi:[2,3],roma:"Gakkoo de ikimasu.",en:"I go to school.",ok:false,p:"で",cp:"に",exp:"で marks where an action happens, but 行く needs に for destination. Use 学校に行きます."},
+{ja:"水が飲みます。",hi:[1,2],roma:"Mizu ga nomimasu.",en:"I drink water.",ok:false,p:"が",cp:"を",exp:"飲む is a transitive verb. The thing being drunk is the direct object, so を is needed."},
+{ja:"7時で起きます。",hi:[2,3],roma:"Shichi-ji de okimasu.",en:"I wake up at 7.",ok:false,p:"で",cp:"に",exp:"で means 'by means of', not 'at a time'. Use に for specific time points."},
+{ja:"バスに行きます。",hi:[2,3],roma:"Basu ni ikimasu.",en:"I go by bus.",ok:false,p:"に",cp:"で",exp:"に marks destination, not means of transport. Use で for 'by' bus, train, etc."},
+{ja:"家に食べます。",hi:[1,2],roma:"Ie ni tabemasu.",en:"I eat at home.",ok:false,p:"に",cp:"で",exp:"に marks destination or existence. For where an action takes place, use で."},
+{ja:"友だちで電話します。",hi:[3,4],roma:"Tomodachi de denwa shimasu.",en:"I call a friend.",ok:false,p:"で",cp:"に",exp:"で marks means or location. The person you call is a recipient — use に."},
+{ja:"本に読みます。",hi:[1,2],roma:"Hon ni yomimasu.",en:"I read a book.",ok:false,p:"に",cp:"を",exp:"読む is a transitive verb. The thing being read is the direct object — use を, not に."},
+{ja:"音楽で聴きます。",hi:[2,3],roma:"Ongaku de kikimasu.",en:"I listen to music.",ok:false,p:"で",cp:"を",exp:"聴く is a transitive verb. The thing being listened to is the direct object — use を, not で."},
+{ja:"毎日学校で行きます。",hi:[4,5],roma:"Mainichi gakkoo de ikimasu.",en:"I go to school every day.",ok:false,p:"で",cp:"に",exp:"で marks where an action takes place. 行く needs に to mark the destination, not で."},
+{ja:"図書館に勉強します。",hi:[3,4],roma:"Toshokan ni benkyoo shimasu.",en:"I study at the library.",ok:false,p:"に",cp:"で",exp:"勉強する is an action. Use で to mark where the action takes place, not に."}
+,
+{ja:"猫が庭にいます。",hi:[1, 2],roma:"Neko ga niwa ni imasu.",en:"There is a cat in the garden.",ok:true,p:"が",cp:null,exp:"が marks 猫 as the subject. Use が for announcing existence."},
+{ja:"ジュースを買います。",hi:[4, 5],roma:"Juusu o kaimasu.",en:"I buy juice.",ok:true,p:"を",cp:null,exp:"を marks ジュース as the direct object of 買う."},
+{ja:"駅に着きます。",hi:[1, 2],roma:"Eki ni tsukimasu.",en:"I arrive at the station.",ok:true,p:"に",cp:null,exp:"に marks the destination or arrival point."},
+{ja:"公園で走ります。",hi:[2, 3],roma:"Kooen de hashirimasu.",en:"I run in the park.",ok:true,p:"で",cp:null,exp:"で marks where the action takes place."},
+{ja:"ケーキを作ります。",hi:[3, 4],roma:"Keeki o tsukurimasu.",en:"I make a cake.",ok:true,p:"を",cp:null,exp:"を marks ケーキ as the direct object of 作る."},
+{ja:"病院に行きます。",hi:[2, 3],roma:"Byooin ni ikimasu.",en:"I go to the hospital.",ok:true,p:"に",cp:null,exp:"に marks destination with movement verbs like 行く."},
+{ja:"教室で話します。",hi:[2, 3],roma:"Kyooshitsu de hanashimasu.",en:"I talk in the classroom.",ok:true,p:"で",cp:null,exp:"で marks where the action takes place."},
+{ja:"手紙を書きます。",hi:[2, 3],roma:"Tegami o kakimasu.",en:"I write a letter.",ok:true,p:"を",cp:null,exp:"を marks 手紙 as the direct object of 書く."},
+{ja:"ご飯を食べました。",hi:[2, 3],roma:"Gohan o tabemashita.",en:"I ate a meal.",ok:true,p:"を",cp:null,exp:"を marks ご飯 as the direct object of 食べる."},
+{ja:"部屋に犬がいます。",hi:[2, 3],roma:"Heya ni inu ga imasu.",en:"There is a dog in the room.",ok:true,p:"に",cp:null,exp:"に marks the location where something exists. Use に with います/あります."},
+{ja:"バスで学校に行きます。",hi:[2, 3],roma:"Basu de gakkoo ni ikimasu.",en:"I go to school by bus.",ok:true,p:"で",cp:null,exp:"で marks means of transport. You go BY (で) bus."},
+{ja:"ジュースに買います。",hi:[4, 5],roma:"Juusu ni kaimasu.",en:"I buy juice.",ok:false,p:"に",cp:"を",exp:"買う is a transitive verb. The thing being bought is the direct object — use を, not に."},
+{ja:"駅で着きます。",hi:[1, 2],roma:"Eki de tsukimasu.",en:"I arrive at the station.",ok:false,p:"で",cp:"に",exp:"で marks where an action takes place. 着く (to arrive) needs に for the destination."},
+{ja:"公園に走ります。",hi:[2, 3],roma:"Kooen ni hashirimasu.",en:"I run in the park.",ok:false,p:"に",cp:"で",exp:"に marks destination or existence. For where an action takes place, use で."},
+{ja:"手紙に書きます。",hi:[2, 3],roma:"Tegami ni kakimasu.",en:"I write a letter.",ok:false,p:"に",cp:"を",exp:"書く is a transitive verb. 手紙 is the direct object — use を, not に."},
+{ja:"病院で行きます。",hi:[2, 3],roma:"Byooin de ikimasu.",en:"I go to the hospital.",ok:false,p:"で",cp:"に",exp:"で marks where an action takes place. 行く (to go) needs に for destination."},
+{ja:"ケーキに作ります。",hi:[3, 4],roma:"Keeki ni tsukurimasu.",en:"I make a cake.",ok:false,p:"に",cp:"を",exp:"作る is a transitive verb. ケーキ is the direct object — use を, not に."},
+{ja:"ご飯に食べました。",hi:[2, 3],roma:"Gohan ni tabemashita.",en:"I ate a meal.",ok:false,p:"に",cp:"を",exp:"食べる is a transitive verb. ご飯 is the direct object — use を, not に."},
+{ja:"部屋で犬がいます。",hi:[2, 3],roma:"Heya de inu ga imasu.",en:"There is a dog in the room.",ok:false,p:"で",cp:"に",exp:"で marks where an action takes place. For static existence (います/あります), use に."}
+,
+{ja:"私は学生です。",hi:[1, 2],roma:"Watashi wa gakusei desu.",en:"I am a student.",ok:true,p:"は",cp:null,exp:"は marks 私 as the topic. It introduces what the sentence is about."},
+{ja:"猫が庭にいます。",hi:[1, 2],roma:"Neko ga niwa ni imasu.",en:"There is a cat in the garden.",ok:true,p:"が",cp:null,exp:"が marks 猫 as the subject in an existence sentence (います)."},
+{ja:"日本語が好きです。",hi:[3, 4],roma:"Nihongo ga suki desu.",en:"I like Japanese.",ok:true,p:"が",cp:null,exp:"が is always used with 好き, 嫌い, 上手, 下手. The thing you like takes が."},
+{ja:"りんごが三つあります。",hi:[3, 4],roma:"Ringo ga mittsu arimasu.",en:"There are three apples.",ok:true,p:"が",cp:null,exp:"が marks りんご as the subject in an existence sentence (あります)."},
+{ja:"猫を庭にいます。",hi:[1, 2],roma:"Neko o niwa ni imasu.",en:"There is a cat in the garden.",ok:false,p:"を",cp:"が",exp:"います is an existence verb. The thing that exists is the subject — use が, not を."},
+{ja:"日本語を好きです。",hi:[3, 4],roma:"Nihongo o suki desu.",en:"I like Japanese.",ok:false,p:"を",cp:"が",exp:"好き is an adjective. The thing you like always takes が, never を."},
+{ja:"りんごを三つあります。",hi:[3, 4],roma:"Ringo o mittsu arimasu.",en:"There are three apples.",ok:false,p:"を",cp:"が",exp:"あります is an existence verb. The thing that exists takes が as subject, not を."},
+{ja:"私で学生です。",hi:[1, 2],roma:"Watashi de gakusei desu.",en:"I am a student.",ok:false,p:"で",cp:"は",exp:"で marks means or location of action. To state identity or topic, use は."}
+,
+{ja:"黒板に字を書きます。",hi:[2,3],roma:"Kokuban ni ji o kakimasu.",en:"I write letters on the blackboard.",ok:true,p:"に",cp:null,exp:"に marks the surface being written on. You write ON (に) the blackboard."},
+{ja:"黒板で字を書きます。",hi:[2,3],roma:"Kokuban de ji o kakimasu.",en:"I write letters on the blackboard.",ok:false,p:"で",cp:"に",exp:"で marks the tool or place of action. For the surface you write on, use に."},
+{ja:"弟は宿題をします。",hi:[1, 2],roma:"Otooto wa shukudai o shimasu.",en:"My younger brother does homework.",ok:true,p:"は",cp:null,exp:"は marks 弟 as the topic of the sentence."},
+{ja:"弟で宿題をします。",hi:[1, 2],roma:"Otooto de shukudai o shimasu.",en:"My younger brother does homework.",ok:false,p:"で",cp:"は",exp:"で marks means or location. To state who the topic is, use は."},
+{ja:"電話で話します。",hi:[2, 3],roma:"Denwa de hanashimasu.",en:"I talk by phone.",ok:true,p:"で",cp:null,exp:"で marks means. 電話で means 'by phone'."},
+{ja:"電話に話します。",hi:[2, 3],roma:"Denwa ni hanashimasu.",en:"I talk by phone.",ok:false,p:"に",cp:"で",exp:"に marks destination or recipient. For the means used ('by phone'), use で."},
+{ja:"牛乳を飲みます。",hi:[2, 3],roma:"Gyuunyuu o nomimasu.",en:"I drink milk.",ok:true,p:"を",cp:null,exp:"を marks 牛乳 as the direct object of 飲む."},
+{ja:"牛乳に飲みます。",hi:[2, 3],roma:"Gyuunyuu ni nomimasu.",en:"I drink milk.",ok:false,p:"に",cp:"を",exp:"飲む is a transitive verb. The thing being drunk is the direct object — use を, not に."}
+],
+N4:[
+// --- CORRECT ---
+{ja:"毎朝コーヒーを飲みます。",hi:[6,7],roma:"Maiasa koohii o nomimasu.",en:"I drink coffee every morning.",ok:true,p:"を",cp:null,exp:"を marks コーヒー as the direct object of 飲む."},
+{ja:"東京に住んでいます。",hi:[2,3],roma:"Tookyoo ni sunde imasu.",en:"I live in Tokyo.",ok:true,p:"に",cp:null,exp:"に marks the location of residence with 住む. 住んで — the で here is part of the verb form 〜ている, not a particle."},
+{ja:"公園で子どもが遊んでいます。",hi:[2,3],roma:"Kooen de kodomo ga asonde imasu.",en:"Children are playing in the park.",ok:true,p:"で",cp:null,exp:"で marks where the action of playing takes place."},
+{ja:"先生に質問しました。",hi:[2,3],roma:"Sensei ni shitsumon shimashita.",en:"I asked the teacher a question.",ok:true,p:"に",cp:null,exp:"に marks the recipient of the action."},
+{ja:"日本語で話してください。",hi:[3,4],roma:"Nihongo de hanashite kudasai.",en:"Please speak in Japanese.",ok:true,p:"で",cp:null,exp:"で marks means. 日本語で means 'in Japanese'."},
+{ja:"兄に本を借りました。",hi:[1,2],roma:"Ani ni hon o karimashita.",en:"I borrowed a book from my brother.",ok:true,p:"に",cp:null,exp:"に marks the person you borrow from with 借りる."},
+{ja:"電車で駅まで行きます。",hi:[2,3],roma:"Densha de eki made ikimasu.",en:"I go to the station by train.",ok:true,p:"で",cp:null,exp:"で marks means of transportation. You go BY (で) train."},
+{ja:"子どものころから日本語を勉強しています。",hi:[11,12],roma:"Kodomo no koro kara nihongo o benkyoo shite imasu.",en:"I have been studying Japanese since childhood.",ok:true,p:"を",cp:null,exp:"を marks 日本語 as the direct object of 勉強する."},
+// --- WRONG ---
+{ja:"東京で住んでいます。",hi:[2,3],roma:"Tookyoo de sunde imasu.",en:"I live in Tokyo.",ok:false,p:"で",cp:"に",exp:"住む takes に for the location of residence. 住んで — the で after 住ん is part of the verb form ている, not the particle. The particle after 東京 must be に."},
+{ja:"先生で質問しました。",hi:[2,3],roma:"Sensei de shitsumon shimashita.",en:"I asked the teacher a question.",ok:false,p:"で",cp:"に",exp:"で marks means, not recipients. Use に to mark the person you are asking."},
+{ja:"公園に子どもが遊んでいます。",hi:[2,3],roma:"Kooen ni kodomo ga asonde imasu.",en:"Children are playing in the park.",ok:false,p:"に",cp:"で",exp:"に marks static existence, but 遊ぶ is an active verb. Use で for where actions take place."},
+{ja:"日本語を話してください。",hi:[3,4],roma:"Nihongo o hanashite kudasai.",en:"Please speak in Japanese.",ok:false,p:"を",cp:"で",exp:"'In Japanese' means using Japanese as a tool/means, so use で not を."},
+{ja:"毎朝コーヒーが飲みます。",hi:[6,7],roma:"Maiasa koohii ga nomimasu.",en:"I drink coffee every morning.",ok:false,p:"が",cp:"を",exp:"飲む is a transitive verb taking を. が marks subjects, not objects of drinking."},
+{ja:"兄で本を借りました。",hi:[1,2],roma:"Ani de hon o karimashita.",en:"I borrowed a book from my brother.",ok:false,p:"で",cp:"に",exp:"借りる takes に for the person you borrow from. で marks means, not a person."},
+{ja:"電車に駅まで行きます。",hi:[2,3],roma:"Densha ni eki made ikimasu.",en:"I go to the station by train.",ok:false,p:"に",cp:"で",exp:"に marks destination. To say 'by train' (means of transport), use で."},
+{ja:"子どものころから日本語に勉強しています。",hi:[11,12],roma:"Kodomo no koro kara nihongo ni benkyoo shite imasu.",en:"I have been studying Japanese since childhood.",ok:false,p:"に",cp:"を",exp:"勉強する is a transitive verb. 日本語 is the direct object — use を, not に."}
+,
+{ja:"スーパーで野菜を買います。",hi:[4, 5],roma:"Suupaa de yasai o kaimasu.",en:"I buy vegetables at the supermarket.",ok:true,p:"で",cp:null,exp:"で marks where the action of buying takes place."},
+{ja:"友だちに手紙を送りました。",hi:[3, 4],roma:"Tomodachi ni tegami o okurimashita.",en:"I sent a letter to a friend.",ok:true,p:"に",cp:null,exp:"に marks the recipient of the action 送る (to send)."},
+{ja:"部屋に鍵を忘れました。",hi:[2, 3],roma:"Heya ni kagi o wasuremashita.",en:"I left my key in the room.",ok:true,p:"に",cp:null,exp:"に marks the location where something was left (existence location)."},
+{ja:"日本語を毎日練習します。",hi:[3, 4],roma:"Nihongo o mainichi renshuu shimasu.",en:"I practice Japanese every day.",ok:true,p:"を",cp:null,exp:"を marks 日本語 as the direct object of 練習する."},
+{ja:"電話で予約しました。",hi:[2, 3],roma:"Denwa de yoyaku shimashita.",en:"I made a reservation by phone.",ok:true,p:"で",cp:null,exp:"で marks the means used. 電話で means 'by phone'."},
+{ja:"妹に誕生日プレゼントをあげました。",hi:[1, 2],roma:"Imooto ni tanjoobi purezento o agemashita.",en:"I gave a birthday present to my younger sister.",ok:true,p:"に",cp:null,exp:"に marks the recipient of あげる (to give)."},
+{ja:"会社でランチを食べます。",hi:[2, 3],roma:"Kaisha de ranchi o tabemasu.",en:"I eat lunch at the company.",ok:true,p:"で",cp:null,exp:"で marks where the action of eating takes place."},
+{ja:"駅で友だちを待ちます。",hi:[1, 2],roma:"Eki de tomodachi o machimasu.",en:"I wait for a friend at the station.",ok:true,p:"で",cp:null,exp:"で marks the location where you wait."},
+{ja:"スーパーに野菜を買います。",hi:[4, 5],roma:"Suupaa ni yasai o kaimasu.",en:"I buy vegetables at the supermarket.",ok:false,p:"に",cp:"で",exp:"に marks destination or existence. For where an action takes place, use で."},
+{ja:"友だちで手紙を送りました。",hi:[3, 4],roma:"Tomodachi de tegami o okurimashita.",en:"I sent a letter to a friend.",ok:false,p:"で",cp:"に",exp:"で marks means or location, not recipients. Use に for the person you send to."},
+{ja:"日本語に毎日練習します。",hi:[3, 4],roma:"Nihongo ni mainichi renshuu shimasu.",en:"I practice Japanese every day.",ok:false,p:"に",cp:"を",exp:"練習する is a transitive verb. 日本語 is the direct object — use を, not に."},
+{ja:"電話に予約しました。",hi:[2, 3],roma:"Denwa ni yoyaku shimashita.",en:"I made a reservation by phone.",ok:false,p:"に",cp:"で",exp:"に marks destination or recipient. For the means used ('by phone'), use で."},
+{ja:"部屋で鍵を忘れました。",hi:[2, 3],roma:"Heya de kagi o wasuremashita.",en:"I left my key in the room.",ok:false,p:"で",cp:"に",exp:"忘れる (to leave/forget something behind) uses に to mark the location, not で."},
+{ja:"妹で誕生日プレゼントをあげました。",hi:[1, 2],roma:"Imooto de tanjoobi purezento o agemashita.",en:"I gave a birthday present to my younger sister.",ok:false,p:"で",cp:"に",exp:"で marks means or location. The person you give something to is a recipient — use に."},
+{ja:"会社に昼ご飯を食べます。",hi:[2, 3],roma:"Kaisha ni hirugohann o tabemasu.",en:"I eat lunch at the company.",ok:false,p:"に",cp:"で",exp:"に marks destination or existence. For where an action takes place, use で."},
+{ja:"駅に友だちを待ちます。",hi:[1, 2],roma:"Eki ni tomodachi o machimasu.",en:"I wait for a friend at the station.",ok:false,p:"に",cp:"で",exp:"に marks destination. For where you wait (an action), use で."}
+,
+{ja:"部長は会議室にいます。",hi:[6, 7],roma:"Buchoo wa kaigishitsu ni imasu.",en:"The department head is in the meeting room.",ok:true,p:"に",cp:null,exp:"に marks where someone exists (います). 会議室に = in the meeting room."},
+{ja:"荷物が届きました。",hi:[2, 3],roma:"Nimotsu ga todokimashita.",en:"The package arrived.",ok:true,p:"が",cp:null,exp:"が marks 荷物 as the subject performing the action of arriving."},
+{ja:"新入社員が発表しました。",hi:[4, 5],roma:"Shinnyuu shain ga happyoo shimashita.",en:"The new employee gave a presentation.",ok:true,p:"が",cp:null,exp:"が marks 新入社員 as the subject performing the action."},
+{ja:"社長にメールを送りました。",hi:[2, 3],roma:"Shachoo ni meeru o okurimashita.",en:"I sent an email to the president.",ok:true,p:"に",cp:null,exp:"に marks the recipient of 送る (to send). You send TO (に) the president."},
+{ja:"部長を会議室にいます。",hi:[2, 3],roma:"Buchoo o kaigishitsu ni imasu.",en:"The department head is in the meeting room.",ok:false,p:"を",cp:"は",exp:"います is an existence verb. The person who exists is the topic — use は (or が). を marks a direct object of an action verb."},
+{ja:"部長で会議室にいます。",hi:[2, 3],roma:"Buchoo de kaigishitsu ni imasu.",en:"The department head is in the meeting room.",ok:false,p:"で",cp:"は",exp:"で marks means or location of action. To state who exists somewhere with います, use は or が."},
+{ja:"荷物に届きました。",hi:[2, 3],roma:"Nimotsu ni todokimashita.",en:"The package arrived.",ok:false,p:"に",cp:"が",exp:"に marks destination or recipient. 荷物 is the subject of 届く — use が."},
+{ja:"荷物を届きました。",hi:[2, 3],roma:"Nimotsu o todokimashita.",en:"The package arrived.",ok:false,p:"を",cp:"が",exp:"を marks a direct object. 届く (to arrive) is intransitive — its subject takes が, not を."},
+{ja:"新入社員に発表しました。",hi:[4, 5],roma:"Shinnyuu shain ni happyoo shimashita.",en:"The new employee gave a presentation.",ok:false,p:"に",cp:"が",exp:"に marks recipient. 新入社員 is the subject performing the action — use が."},
+{ja:"社長でメールを送りました。",hi:[2, 3],roma:"Shachoo de meeru o okurimashita.",en:"I sent an email to the president.",ok:false,p:"で",cp:"に",exp:"で marks means or location. The person you send to is a recipient — use に."},
+{ja:"社長をメールを送りました。",hi:[2, 3],roma:"Shachoo o meeru o okurimashita.",en:"I sent an email to the president.",ok:false,p:"を",cp:"に",exp:"を marks direct object. The president is the recipient — use に, not を."}
+,
+{ja:"映画を見ます。",hi:[2, 3],roma:"Eiga o mimasu.",en:"I watch a movie.",ok:true,p:"を",cp:null,exp:"を marks 映画 as the direct object of 見る."},
+{ja:"映画に見ます。",hi:[2, 3],roma:"Eiga ni mimasu.",en:"I watch a movie.",ok:false,p:"に",cp:"を",exp:"見る is a transitive verb. 映画 is the direct object — use を, not に."},
+{ja:"図書館に本を返します。",hi:[3, 4],roma:"Toshokan ni hon o kaeshimasu.",en:"I return the book to the library.",ok:true,p:"に",cp:null,exp:"に marks the destination of 返す (to return). You return it TO (に) the library."},
+{ja:"図書館で本を返します。",hi:[3, 4],roma:"Toshokan de hon o kaeshimasu.",en:"I return the book to the library.",ok:false,p:"で",cp:"に",exp:"で marks where an action takes place. 返す needs に for the destination."},
+{ja:"友だちに誕生日プレゼントをもらいました。",hi:[3, 4],roma:"Tomodachi ni tanjoobi purezento o moraimashita.",en:"I received a birthday present from a friend.",ok:true,p:"に",cp:null,exp:"に marks the giver with もらう (to receive). You receive FROM (に) a friend."},
+{ja:"友だちで誕生日プレゼントをもらいました。",hi:[3, 4],roma:"Tomodachi de tanjoobi purezento o moraimashita.",en:"I received a birthday present from a friend.",ok:false,p:"で",cp:"に",exp:"で marks means or location. The person you receive from takes に with もらう."},
+{ja:"公園でジョギングします。",hi:[2, 3],roma:"Kooen de jogingu shimasu.",en:"I jog in the park.",ok:true,p:"で",cp:null,exp:"で marks where the action takes place."},
+{ja:"公園にジョギングします。",hi:[2, 3],roma:"Kooen ni jogingu shimasu.",en:"I jog in the park.",ok:false,p:"に",cp:"で",exp:"に marks destination or existence. For where an action takes place, use で."},
+{ja:"先輩に相談しました。",hi:[2, 3],roma:"Senpai ni soodan shimashita.",en:"I consulted my senior.",ok:true,p:"に",cp:null,exp:"に marks the person you consult. 相談する takes に for the recipient."},
+{ja:"先輩で相談しました。",hi:[2, 3],roma:"Senpai de soodan shimashita.",en:"I consulted my senior.",ok:false,p:"で",cp:"に",exp:"で marks means or location. The person you consult is a recipient — use に."},
+{ja:"空港に迎えに行きます。",hi:[2, 3],roma:"Kuukoo ni mukae ni ikimasu.",en:"I go to the airport to pick someone up.",ok:true,p:"に",cp:null,exp:"に marks destination with 行く. You go TO (に) the airport."},
+{ja:"空港で迎えに行きます。",hi:[2, 3],roma:"Kuukoo de mukae ni ikimasu.",en:"I go to the airport to pick someone up.",ok:false,p:"で",cp:"に",exp:"で marks where an action takes place. 行く needs に to show where you are going."},
+{ja:"レストランで食事をします。",hi:[5, 6],roma:"Resutoran de shokuji o shimasu.",en:"I have a meal at a restaurant.",ok:true,p:"で",cp:null,exp:"で marks where the action of eating takes place."},
+{ja:"レストランに食事をします。",hi:[5, 6],roma:"Resutoran ni shokuji o shimasu.",en:"I have a meal at a restaurant.",ok:false,p:"に",cp:"で",exp:"に marks destination or existence. For where an action takes place, use で."},
+{ja:"母に料理を習いました。",hi:[1, 2],roma:"Haha ni ryouri o naraimashita.",en:"I learned cooking from my mother.",ok:true,p:"に",cp:null,exp:"に marks the person you learn from. 習う takes に for the teacher."},
+{ja:"母で料理を習いました。",hi:[1, 2],roma:"Haha de ryouri o naraimashita.",en:"I learned cooking from my mother.",ok:false,p:"で",cp:"に",exp:"で marks means or location. The person you learn from takes に with 習う."}
+],
+N3:[
+// --- CORRECT ---
+{ja:"子どものころから音楽に興味があります。",hi:[10,11],roma:"Kodomo no koro kara ongaku ni kyoumi ga arimasu.",en:"I have been interested in music since childhood.",ok:true,p:"に",cp:null,exp:"興味がある takes に for the target of interest."},
+{ja:"病気のため、学校を休みました。",hi:[8,9],roma:"Byouki no tame, gakkoo o yasumimashita.",en:"I was absent from school due to illness.",ok:true,p:"を",cp:null,exp:"を with 休む marks what you are absent FROM. 学校を休む = be absent from school."},
+{ja:"彼に仕事を頼みました。",hi:[1,2],roma:"Kare ni shigoto o tanomimashita.",en:"I asked him to do the work.",ok:true,p:"に",cp:null,exp:"に marks the person you make a request to. 頼む takes に for the recipient."},
+// --- WRONG ---
+{ja:"彼女は料理を上手です。",hi:[5,6],roma:"Kanojo wa ryouri o jouzu desu.",en:"She is good at cooking.",ok:false,p:"を",cp:"が",exp:"上手, 好き, 嫌い and similar adjectives always take が for their object, never を."},
+{ja:"病気のため、学校に休みました。",hi:[8,9],roma:"Byouki no tame, gakkoo ni yasumimashita.",en:"I was absent from school due to illness.",ok:false,p:"に",cp:"を",exp:"休む uses を to mark what you are absent FROM. に would imply going to school."},
+{ja:"子どものころから音楽で興味があります。",hi:[10,11],roma:"Kodomo no koro kara ongaku de kyoumi ga arimasu.",en:"I have been interested in music since childhood.",ok:false,p:"で",cp:"に",exp:"で marks means or location. 興味がある takes に for the target of interest."},
+{ja:"彼で仕事を頼みました。",hi:[1,2],roma:"Kare de shigoto o tanomimashita.",en:"I asked him to do the work.",ok:false,p:"で",cp:"に",exp:"で marks means or location, not the recipient of a request. Use に for the person you ask."},
+{ja:"部長に報告しました。",hi:[2, 3],roma:"Buchoo ni hookolku shimashita.",en:"I reported to the department head.",ok:true,p:"に",cp:null,exp:"に marks the person reported to. 報告する takes に for the recipient."},
+{ja:"試験を受けます。",hi:[2, 3],roma:"Shiken o ukemasu.",en:"I take an exam.",ok:true,p:"を",cp:null,exp:"を marks 試験 as the direct object of 受ける."},
+{ja:"会議室で発表します。",hi:[3, 4],roma:"Kaigishitsu de happyoo shimasu.",en:"I give a presentation in the meeting room.",ok:true,p:"で",cp:null,exp:"で marks where the action of presenting takes place."},
+{ja:"報告書を明日までに書きます。",hi:[3, 4],roma:"Hookokusho o ashita made ni kakimasu.",en:"I will write the report by tomorrow.",ok:true,p:"を",cp:null,exp:"を marks 報告書 as the direct object of 書く."},
+{ja:"彼で英語が得意です。",hi:[1, 2],roma:"Kare de eigo ga tokui desu.",en:"He is good at English.",ok:false,p:"で",cp:"は",exp:"で marks means or location, not the topic of a sentence. Use は to mark 彼 as the topic."},
+{ja:"部長で報告しました。",hi:[2, 3],roma:"Buchoo de hookolku shimashita.",en:"I reported to the department head.",ok:false,p:"で",cp:"に",exp:"で marks means or location, not recipients. Use に for the person you report to."},
+{ja:"試験に受けます。",hi:[2, 3],roma:"Shiken ni ukemasu.",en:"I take an exam.",ok:false,p:"に",cp:"を",exp:"受ける is a transitive verb. 試験 is the direct object — use を, not に."},
+{ja:"会議室に発表します。",hi:[3, 4],roma:"Kaigishitsu ni happyoo shimasu.",en:"I give a presentation in the meeting room.",ok:false,p:"に",cp:"で",exp:"に marks static existence or destination. For where an action takes place, use で."},
+{ja:"報告書に明日までに書きます。",hi:[3, 4],roma:"Hookokusho ni ashita made ni kakimasu.",en:"I will write the report by tomorrow.",ok:false,p:"に",cp:"を",exp:"書く is a transitive verb. 報告書 is the direct object — use を, not に."}
+,
+{ja:"彼は英語が得意です。",hi:[4, 5],roma:"Kare wa eigo ga tokui desu.",en:"He is good at English.",ok:true,p:"が",cp:null,exp:"得意 (good at) takes が for its object. The skill always takes が."},
+{ja:"弟に自転車をあげました。",hi:[1, 2],roma:"Otooto ni jitensha o agemashita.",en:"I gave a bicycle to my younger brother.",ok:true,p:"に",cp:null,exp:"に marks the recipient of あげる (to give). You give TO (に) your brother."},
+{ja:"報告書を部長に提出しました。",hi:[3, 4],roma:"Hookokusho o buchoo ni teishutsu shimashita.",en:"I submitted the report to the department head.",ok:true,p:"を",cp:null,exp:"を marks 報告書 as the direct object of 提出する (to submit)."},
+{ja:"彼は英語で得意です。",hi:[4, 5],roma:"Kare wa eigo de tokui desu.",en:"He is good at English.",ok:false,p:"で",cp:"が",exp:"で marks means or tool. 得意 takes が for the skill you are good at."},
+{ja:"彼は英語に得意です。",hi:[4, 5],roma:"Kare wa eigo ni tokui desu.",en:"He is good at English.",ok:false,p:"に",cp:"が",exp:"に marks destination, time, or recipient. 得意 takes が for its object."},
+{ja:"弟で自転車をあげました。",hi:[1, 2],roma:"Otooto de jitensha o agemashita.",en:"I gave a bicycle to my younger brother.",ok:false,p:"で",cp:"に",exp:"で marks means or location. The person you give something to is a recipient — use に."},
+{ja:"弟を自転車をあげました。",hi:[1, 2],roma:"Otooto o jitensha o agemashita.",en:"I gave a bicycle to my younger brother.",ok:false,p:"を",cp:"に",exp:"を marks direct object. Your brother is the recipient of あげる — use に."},
+{ja:"報告書に部長に提出しました。",hi:[3, 4],roma:"Hookokusho ni buchoo ni teishutsu shimashita.",en:"I submitted the report to the department head.",ok:false,p:"に",cp:"を",exp:"に marks destination or recipient. 報告書 is the direct object of 提出する — use を."},
+{ja:"報告書で部長に提出しました。",hi:[3, 4],roma:"Hookokusho de buchoo ni teishutsu shimashita.",en:"I submitted the report to the department head.",ok:false,p:"で",cp:"を",exp:"で marks means or tool. 報告書 is the direct object of 提出する — use を."}
+,
+{ja:"顧客にメールを送りました。",hi:[2, 3],roma:"Kokyaku ni meeru o okurimashita.",en:"I sent an email to the customer.",ok:true,p:"に",cp:null,exp:"に marks the recipient of 送る. You send TO (に) the customer."},
+{ja:"顧客でメールを送りました。",hi:[2, 3],roma:"Kokyaku de meeru o okurimashita.",en:"I sent an email to the customer.",ok:false,p:"で",cp:"に",exp:"で marks means or location. The person you send to is a recipient — use に."},
+{ja:"上司に許可をもらいました。",hi:[2, 3],roma:"Jooshi ni kyoka o moraimashita.",en:"I got permission from my boss.",ok:true,p:"に",cp:null,exp:"に marks the giver with もらう. You receive FROM (に) your boss."},
+{ja:"上司で許可をもらいました。",hi:[2, 3],roma:"Jooshi de kyoka o moraimashita.",en:"I got permission from my boss.",ok:false,p:"で",cp:"に",exp:"で marks means or location. The person you receive from takes に with もらう."},
+{ja:"会議で意見を述べました。",hi:[2, 3],roma:"Kaigi de iken o nobemashita.",en:"I expressed my opinion at the meeting.",ok:true,p:"で",cp:null,exp:"で marks where the action takes place."},
+{ja:"会議に意見を述べました。",hi:[2, 3],roma:"Kaigi ni iken o nobemashita.",en:"I expressed my opinion at the meeting.",ok:false,p:"に",cp:"で",exp:"に marks destination or existence. For where an action takes place, use で."},
+{ja:"プロジェクトに参加しました。",hi:[6, 7],roma:"Purojekuto ni sanka shimashita.",en:"I participated in the project.",ok:true,p:"に",cp:null,exp:"に marks the target of 参加する (to participate). You participate IN (に) the project."},
+{ja:"プロジェクトで参加しました。",hi:[6, 7],roma:"Purojekuto de sanka shimashita.",en:"I participated in the project.",ok:false,p:"で",cp:"に",exp:"で marks means or location. 参加する takes に for the thing you join."},
+{ja:"資料を確認しました。",hi:[2, 3],roma:"Shiryoo o kakunin shimashita.",en:"I checked the documents.",ok:true,p:"を",cp:null,exp:"を marks 資料 as the direct object of 確認する."},
+{ja:"資料に確認しました。",hi:[2, 3],roma:"Shiryoo ni kakunin shimashita.",en:"I checked the documents.",ok:false,p:"に",cp:"を",exp:"確認する is a transitive verb. 資料 is the direct object — use を, not に."},
+{ja:"部下に仕事を任せました。",hi:[2, 3],roma:"Buka ni shigoto o makasemashita.",en:"I entrusted the work to my subordinate.",ok:true,p:"に",cp:null,exp:"に marks the person entrusted. 任せる takes に for the recipient."},
+{ja:"部下で仕事を任せました。",hi:[2, 3],roma:"Buka de shigoto o makasemashita.",en:"I entrusted the work to my subordinate.",ok:false,p:"で",cp:"に",exp:"で marks means or location. The person you entrust work to takes に with 任せる."},
+{ja:"締め切りに間に合いました。",hi:[4, 5],roma:"Shimekiri ni ma ni aimashita.",en:"I made it in time for the deadline.",ok:true,p:"に",cp:null,exp:"に marks the time point. You make it in time FOR (に) the deadline."},
+{ja:"締め切りで間に合いました。",hi:[4, 5],roma:"Shimekiri de ma ni aimashita.",en:"I made it in time for the deadline.",ok:false,p:"で",cp:"に",exp:"で marks means or location. For a time point or target, use に."},
+{ja:"同僚に手伝ってもらいました。",hi:[2, 3],roma:"Dooryoo ni tetsudatte moraimashita.",en:"I had my colleague help me.",ok:true,p:"に",cp:null,exp:"に marks the person who helps. もらう takes に for the person doing the favor."},
+{ja:"同僚で手伝ってもらいました。",hi:[2, 3],roma:"Dooryoo de tetsudatte moraimashita.",en:"I had my colleague help me.",ok:false,p:"で",cp:"に",exp:"で marks means or location. The person who helps you takes に with もらう."},
+{ja:"スケジュールを変更しました。",hi:[6, 7],roma:"Sukejuuru o henkou shimashita.",en:"I changed the schedule.",ok:true,p:"を",cp:null,exp:"を marks スケジュール as the direct object of 変更する."},
+{ja:"スケジュールに変更しました。",hi:[6, 7],roma:"Sukejuuru ni henkou shimashita.",en:"I changed the schedule.",ok:false,p:"に",cp:"を",exp:"変更する is a transitive verb. スケジュール is the direct object — use を, not に."},
+{ja:"電車で通勤します。",hi:[2, 3],roma:"Densha de tsuukin shimasu.",en:"I commute by train.",ok:true,p:"で",cp:null,exp:"で marks means of transport. You commute BY (で) train."},
+{ja:"電車に通勤します。",hi:[2, 3],roma:"Densha ni tsuukin shimasu.",en:"I commute by train.",ok:false,p:"に",cp:"で",exp:"に marks destination. For means of transport ('by train'), use で."},
+{ja:"オフィスで打ち合わせをします。",hi:[4, 5],roma:"Ofisu de uchiawase o shimasu.",en:"I have a meeting at the office.",ok:true,p:"で",cp:null,exp:"で marks where the action takes place."},
+{ja:"オフィスに打ち合わせをします。",hi:[4, 5],roma:"Ofisu ni uchiawase o shimasu.",en:"I have a meeting at the office.",ok:false,p:"に",cp:"で",exp:"に marks destination or existence. For where an action takes place, use で."},
+{ja:"取引先に商品を説明しました。",hi:[3, 4],roma:"Torihikisaki ni shoohin o setsumei shimashita.",en:"I explained the product to the client.",ok:true,p:"に",cp:null,exp:"に marks the recipient of 説明する. You explain TO (に) the client."},
+{ja:"取引先で商品を説明しました。",hi:[3, 4],roma:"Torihikisaki de shoohin o setsumei shimashita.",en:"I explained the product to the client.",ok:false,p:"で",cp:"に",exp:"で marks means or location. The person you explain to is a recipient — use に."},
+{ja:"アンケートに回答しました。",hi:[5, 6],roma:"Ankeeto ni kaitoo shimashita.",en:"I answered the survey.",ok:true,p:"に",cp:null,exp:"に marks the target of 回答する (to respond). You respond TO (に) the survey."},
+{ja:"アンケートを回答しました。",hi:[5, 6],roma:"Ankeeto o kaitoo shimashita.",en:"I answered the survey.",ok:false,p:"を",cp:"に",exp:"回答する takes に for the thing being responded to. Use アンケートに回答する."},
+{ja:"契約書に署名しました。",hi:[3, 4],roma:"Keiyakusho ni shomei shimashita.",en:"I signed the contract.",ok:true,p:"に",cp:null,exp:"に marks the target of 署名する (to sign). You sign ON (に) the contract."},
+{ja:"契約書を署名しました。",hi:[3, 4],roma:"Keiyakusho o shomei shimashita.",en:"I signed the contract.",ok:false,p:"を",cp:"に",exp:"署名する takes に for the document being signed. Use 契約書に署名する."},
+{ja:"後輩に仕事を教えました。",hi:[2, 3],roma:"Koohai ni shigoto o oshiemashita.",en:"I taught work to my junior.",ok:true,p:"に",cp:null,exp:"に marks the recipient of 教える (to teach). You teach TO (に) your junior."},
+{ja:"後輩で仕事を教えました。",hi:[2, 3],roma:"Koohai de shigoto o oshiemashita.",en:"I taught work to my junior.",ok:false,p:"で",cp:"に",exp:"で marks means or location. The person you teach is a recipient — use に."},
+{ja:"問題に気づきました。",hi:[2, 3],roma:"Mondai ni kizukimashita.",en:"I noticed the problem.",ok:true,p:"に",cp:null,exp:"に marks the target of 気づく (to notice). You notice (に) the problem."},
+{ja:"問題を気づきました。",hi:[2, 3],roma:"Mondai o kizukimashita.",en:"I noticed the problem.",ok:false,p:"を",cp:"に",exp:"気づく takes に for what you notice. Use 問題に気づく."},
+{ja:"新製品を開発しました。",hi:[3, 4],roma:"Shinseihin o kaihatsu shimashita.",en:"I developed a new product.",ok:true,p:"を",cp:null,exp:"を marks 新製品 as the direct object of 開発する."},
+{ja:"新製品に開発しました。",hi:[3, 4],roma:"Shinseihin ni kaihatsu shimashita.",en:"I developed a new product.",ok:false,p:"に",cp:"を",exp:"開発する is a transitive verb. 新製品 is the direct object — use を, not に."},
+{ja:"空港でお客様を迎えました。",hi:[6, 7],roma:"Kuukoo de okyakusama o mukaemashita.",en:"I greeted the customer at the airport.",ok:true,p:"を",cp:null,exp:"を marks お客様 as the direct object of 迎える (to greet/meet)."},
+{ja:"空港でお客様に迎えました。",hi:[6, 7],roma:"Kuukoo de okyakusama ni mukaemashita.",en:"I greeted the customer at the airport.",ok:false,p:"に",cp:"を",exp:"迎える is a transitive verb. お客様 is the direct object — use を, not に."},
+{ja:"目標を達成しました。",hi:[2, 3],roma:"Mokuhyoo o tassei shimashita.",en:"I achieved the goal.",ok:true,p:"を",cp:null,exp:"を marks 目標 as the direct object of 達成する."},
+{ja:"目標に達成しました。",hi:[2, 3],roma:"Mokuhyoo ni tassei shimashita.",en:"I achieved the goal.",ok:false,p:"に",cp:"を",exp:"達成する is a transitive verb. 目標 is the direct object — use を, not に."},
+{ja:"意見を聞きました。",hi:[2, 3],roma:"Iken o kikimashita.",en:"I listened to the opinion.",ok:true,p:"を",cp:null,exp:"を marks 意見 as the direct object of 聞く."},
+{ja:"意見に聞きました。",hi:[2, 3],roma:"Iken ni kikimashita.",en:"I listened to the opinion.",ok:false,p:"に",cp:"を",exp:"聞く is a transitive verb. 意見 is the direct object — use を, not に."}
+]
+};
+
+var S={furigana:false,count:10,level:"N5",questions:[],current:0,score:0,answers:[],answered:false,saved:null};
+
+function el(id){return document.getElementById(id);}
+function showScreen(name){
+  document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active");});
+  el("screen-"+name).classList.add("active");
+  window.scrollTo(0,0);
+}
+function shuffle(a){
+  var b=a.slice();
+  for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=b[i];b[i]=b[j];b[j]=t;}
+  return b;
+}
+
+// Build highlighted sentence using character index [start, end)
+function buildSentenceHTML(q){
+  var s=q.ja, h=q.hi;
+  return s.slice(0,h[0])+'<span class="q-hi">'+s.slice(h[0],h[1])+'</span>'+s.slice(h[1]);
+}
+
+// Build corrected sentence (swap particle at hi position)
+function buildCorrected(q){
+  var s=q.ja, h=q.hi;
+  return s.slice(0,h[0])+q.cp+s.slice(h[1]);
+}
+
+function init(){
+  el("btn-minus").addEventListener("click",function(){S.count=Math.max(5,S.count-1);el("count-display").textContent=S.count;});
+  el("btn-plus").addEventListener("click",function(){S.count=Math.min(20,S.count+1);el("count-display").textContent=S.count;});
+  el("toggle-furigana").addEventListener("click",function(){S.furigana=!S.furigana;el("toggle-furigana").classList.toggle("on",S.furigana);});
+  ["N5","N4","N3"].forEach(function(lv){
+    el("lvl-"+lv).addEventListener("click",function(){
+      S.level=lv;
+      document.querySelectorAll(".lvl-btn").forEach(function(b){b.classList.remove("sel");});
+      el("lvl-"+lv).classList.add("sel");
+    });
+  });
+  el("btn-start").addEventListener("click",startQuiz);
+  el("btn-rules").addEventListener("click",function(){showScreen("rules");});
+  el("btn-rules-back").addEventListener("click",function(){showScreen("home");});
+  el("btn-rules-home").addEventListener("click",function(){showScreen("home");});
+  // ホームへ：確認なしで即時移動
+  el("btn-quiz-home").addEventListener("click",function(){showScreen("home");});
+  el("btn-meaning").addEventListener("click",function(){el("q-meaning").style.display="block";el("btn-meaning").style.display="none";});
+  el("btn-ch-ok").addEventListener("click",function(){answerStep1(true);});
+  el("btn-ch-ng").addEventListener("click",function(){answerStep1(false);});
+  el("btn-prev").addEventListener("click",prevQ);
+  el("btn-next").addEventListener("click",nextQ);
+  el("btn-replay").addEventListener("click",replayQuiz);
+  el("btn-pdf").addEventListener("click",exportPDF);
+  el("pdf-close-btn").addEventListener("click",closePdfModal);
+  el("pdf-print-btn").addEventListener("click",function(){
+    // Build a printable page and use print CSS
+    var content=el("pdf-content").innerHTML;
+    var d=new Date();
+    var dateStr=d.getFullYear()+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日";
+    var fullHTML='<!DOCTYPE html><html lang="ja"><head>'
+      +'<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+      +'<title>助詞クイズ 復習レポート '+dateStr+'</title>'
+      +'<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">'
+      +'<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:"Noto Sans JP",sans-serif;background:#fff;color:#1A1A2E;padding:24px 20px;max-width:700px;margin:0 auto;}'
+      +'@media print{@page{margin:12mm;}}</style></head><body>'+content+'</body></html>';
+    var blob=new Blob([fullHTML],{type:'text/html;charset=utf-8'});
+    var url=URL.createObjectURL(blob);
+    var w=window.open(url,'_blank');
+    if(w){
+      w.onload=function(){w.print();};
+    } else {
+      // Fallback: direct print of modal content
+      window.print();
+    }
+    setTimeout(function(){URL.revokeObjectURL(url);},10000);
+  });
+  el("btn-result-home").addEventListener("click",function(){showScreen("home");});
+}
+
+function buildQ(){
+  var pool=shuffle(DB[S.level].slice());
+  // Pick questions ensuring no two questions share the same base sentence.
+  // Base = the sentence with its particle replaced by "X" (strips particle variation).
+  function baseKey(q){
+    var s=q.ja;
+    var h=q.hi;
+    return s.slice(0,h[0])+"X"+s.slice(h[1]);
+  }
+  var usedBase={};
+  var cor=[], wrg=[];
+  for(var i=0;i<pool.length;i++){
+    var bk=baseKey(pool[i]);
+    if(usedBase[bk]) continue;
+    usedBase[bk]=true;
+    if(pool[i].ok) cor.push(pool[i]);
+    else wrg.push(pool[i]);
+  }
+  var nc=Math.max(1,Math.round(S.count*0.25));
+  var nw=S.count-nc;
+  nc=Math.min(nc,cor.length);
+  nw=Math.min(nw,wrg.length);
+  var out=[];
+  for(var i=0;i<nc;i++) out.push(JSON.parse(JSON.stringify(cor[i])));
+  for(var i=0;i<nw;i++) out.push(JSON.parse(JSON.stringify(wrg[i])));
+  return shuffle(out);
+}
+
+function startQuiz(){S.questions=buildQ();S.saved=null;S.current=0;S.score=0;S.answers=[];showScreen("quiz");renderQ();}
+function replayQuiz(){
+  var qs=S.saved||S.questions;
+  S.questions=qs.map(function(q){return JSON.parse(JSON.stringify(q));});
+  S.current=0;S.score=0;S.answers=[];showScreen("quiz");renderQ();
+}
+
+function renderQ(){
+  var q=S.questions[S.current];
+  var total=S.questions.length;
+  S.answered=false;
+  el("quiz-prog").style.width=((S.current/total)*100)+"%";
+  el("quiz-nums").textContent=(S.current+1)+" / "+total;
+  el("score-badge").textContent=S.score+" pt";
+  el("q-sentence").innerHTML=buildSentenceHTML(q);
+  if(S.furigana){el("q-roma").textContent=q.roma;el("q-roma").style.display="block";}
+  else{el("q-roma").style.display="none";}
+  el("q-meaning").style.display="none";el("q-meaning").textContent=q.en;el("btn-meaning").style.display="inline-block";
+  el("step1-row").style.display="grid";el("step2-wrap").style.display="none";
+  el("btn-ch-ok").className="choice-btn";el("btn-ch-ng").className="choice-btn";
+  el("btn-ch-ok").disabled=false;el("btn-ch-ng").disabled=false;
+  var v=el("verdict");v.className="verdict";v.style.display="none";
+  el("btn-next").style.display="none";
+  el("btn-prev").disabled=(S.current===0);
+}
+
+function answerStep1(userOk){
+  if(S.answered)return;
+  var q=S.questions[S.current];
+  el("btn-ch-ok").disabled=true;el("btn-ch-ng").disabled=true;
+  if(userOk){el("btn-ch-ok").classList.add(q.ok?"ch-ok":"ch-ng");}
+  else{el("btn-ch-ng").classList.add(q.ok?"ch-ng":"ch-ok");}
+  if(userOk&&q.ok){finalize(true,q);}
+  else if(!userOk&&!q.ok){showPChoices();}
+  else{finalize(false,q);}
+}
+
+function showPChoices(){
+  var q=S.questions[S.current];
+  el("step2-wrap").style.display="block";
+  var c=el("p-choices");c.innerHTML="";
+  var opts=[q.cp,q.p];
+  var ex=shuffle(PTCLS.filter(function(p){return p!==q.cp&&p!==q.p;}));
+  opts.push(ex[0]);
+  if(ex.length>1&&Math.random()>0.5)opts.push(ex[1]);
+  opts=shuffle(opts);
+  opts.forEach(function(p){
+    var b=document.createElement("button");
+    b.type="button";b.className="p-choice";b.textContent=p;
+    b.addEventListener("click",function(){answerStep2(p);});
+    c.appendChild(b);
+  });
+}
+
+function answerStep2(chosen){
+  if(S.answered)return;
+  var q=S.questions[S.current];
+  document.querySelectorAll(".p-choice").forEach(function(b){
+    b.disabled=true;
+    if(b.textContent===q.cp)b.classList.add("pc-ok");
+    else if(b.textContent===chosen&&chosen!==q.cp)b.classList.add("pc-ng");
+  });
+  finalize(chosen===q.cp,q);
+}
+
+function finalize(correct,q){
+  S.answered=true;
+  if(correct)S.score++;
+  S.answers.push({correct:correct});
+  var v=el("verdict");
+  if(correct){
+    v.className="verdict v-ok show";
+    el("v-icon").textContent="○";
+    el("v-text").textContent="正解！/ Correct!";
+    el("v-corrected").textContent=q.ok?"":"正しくは: "+buildCorrected(q);
+  }else{
+    v.className="verdict v-ng show";
+    el("v-icon").textContent="×";
+    el("v-text").textContent="ざんねん… / Not quite!";
+    el("v-corrected").textContent=q.ok?"この文は正しいです！":"正しくは: "+buildCorrected(q);
+  }
+  el("v-exp").textContent=q.exp;
+  v.style.display="block";
+  el("score-badge").textContent=S.score+" pt";
+  el("btn-next").style.display="block";
+  el("btn-next").textContent=S.current===S.questions.length-1?"結果を見る / See Results":"つぎへ / Next →";
+  playSound(correct);
+  if(correct)confetti();
+}
+
+function nextQ(){if(S.current<S.questions.length-1){S.current++;renderQ();window.scrollTo(0,0);}else{showResults();}}
+function prevQ(){if(S.current>0){S.current--;renderQ();window.scrollTo(0,0);}}
+
+function showResults(){
+  S.saved=S.questions.map(function(q){return JSON.parse(JSON.stringify(q));});
+  var score=S.score,total=S.questions.length,pct=total>0?score/total:0;
+  var emoji,stars,msg,sub;
+  if(pct>=1){emoji="満点！";stars="Perfect Score!";msg="満点！すごい！/ Perfect!";sub="You are a particle master! Try a harder level next!";confetti(true);}
+  else if(pct>=0.7){emoji="もう少し！";stars="Great Job!";msg="もう少し！/ So close!";sub="Great effort! A little more practice and you will nail it!";}
+  else if(pct>=0.4){emoji="がんばれ！";stars="Keep Going!";msg="がんばれ！/ Keep going!";sub="You are getting there! Review the particle guide and try again!";}
+  else{emoji="挑戦しよう！";stars="Try again!";msg="もう一度挑戦！/ Try again!";sub="Every mistake is a lesson! Check the particle list and give it another shot!";}
+  el("r-emoji").textContent=emoji;
+  el("r-score").textContent=score;el("r-max").textContent=" / "+total;
+  el("r-stars").textContent=stars;el("r-msg").textContent=msg;el("r-sub").textContent=sub;
+  var cor=S.answers.filter(function(a){return a.correct;}).length;
+  el("breakdown").innerHTML=
+    '<div class="bk-row"><div style="display:flex;align-items:center;"><span class="bk-dot" style="background:#22C55E;"></span>正解 / Correct</div><strong style="color:#22C55E;">'+cor+'</strong></div>'+
+    '<div class="bk-row"><div style="display:flex;align-items:center;"><span class="bk-dot" style="background:#EF4444;"></span>不正解 / Wrong</div><strong style="color:#EF4444;">'+(total-cor)+'</strong></div>';
+  showScreen("result");
+}
+
+function exportPDF(){
+  var score=S.score;
+  var total=S.questions.length;
+  var pct=Math.round(score/total*100);
+  var d=new Date();
+  var dateStr=d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate()+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2);
+  var levelLabel=S.level==="N5"?"初級 N5":S.level==="N4"?"中級 N4":"上級 N3";
+
+  // Summary cards
+  var summary='<div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;">';
+  summary+='<div style="flex:1;min-width:90px;padding:10px;background:#E8F4FD;border-radius:8px;"><div style="font-size:0.68rem;color:#888;">レベル</div><div style="font-weight:700;color:#2B7FBF;">'+levelLabel+'</div></div>';
+  summary+='<div style="flex:1;min-width:90px;padding:10px;background:#E8F4FD;border-radius:8px;"><div style="font-size:0.68rem;color:#888;">スコア</div><div style="font-size:1.2rem;font-weight:700;color:#2B7FBF;">'+score+' / '+total+'</div></div>';
+  summary+='<div style="flex:1;min-width:90px;padding:10px;background:#E8F4FD;border-radius:8px;"><div style="font-size:0.68rem;color:#888;">正解率</div><div style="font-weight:700;color:#2B7FBF;">'+pct+'%</div></div>';
+  summary+='<div style="flex:1;min-width:90px;padding:10px;background:#E8F4FD;border-radius:8px;"><div style="font-size:0.68rem;color:#888;">日付</div><div style="font-size:0.82rem;font-weight:600;color:#2B7FBF;">'+dateStr+'</div></div>';
+  summary+='</div>';
+
+  // Wrong list
+  var wrongItems='';
+  for(var i=0;i<S.answers.length;i++){
+    if(S.answers[i]&&!S.answers[i].correct){
+      wrongItems+='<span style="display:inline-block;margin:2px 6px 2px 0;">• '+S.questions[i].ja+'</span>';
+    }
+  }
+  var reviewBox='';
+  if(wrongItems){
+    reviewBox='<div style="margin-bottom:16px;padding:10px 14px;background:#fff5f5;border:1.5px solid #EF4444;border-radius:10px;">';
+    reviewBox+='<div style="font-size:0.72rem;font-weight:700;color:#dc2626;margin-bottom:6px;">要復習 / Needs Review</div>';
+    reviewBox+='<div style="font-size:0.85rem;line-height:1.9;">'+wrongItems+'</div></div>';
+  } else {
+    reviewBox='<div style="margin-bottom:16px;padding:10px 14px;background:#f0fdf4;border:1.5px solid #22C55E;border-radius:10px;">';
+    reviewBox+='<div style="font-size:0.9rem;font-weight:700;color:#16a34a;">全問正解！素晴らしい！/ Perfect score!</div></div>';
+  }
+
+  // Question rows
+  var rows='';
+  for(var i=0;i<S.questions.length;i++){
+    var q=S.questions[i];
+    var ans=S.answers[i];
+    var ok=ans&&ans.correct;
+    var bg=ok?"#f0fdf4":"#fff5f5";
+    var bc=ok?"#22C55E":"#EF4444";
+    var mark=ok?"○":"×";
+    var mc=ok?"#16a34a":"#dc2626";
+    var p=q.ja.slice(q.hi[0],q.hi[1]);
+    var sent=q.ja.slice(0,q.hi[0])+'<span style="color:'+bc+';font-weight:900;text-decoration:underline;text-underline-offset:3px;">'+p+'</span>'+q.ja.slice(q.hi[1]);
+    var wrong='';
+    if(!ok){
+      var fix=(!q.ok&&q.cp)?(q.ja.slice(0,q.hi[0])+q.cp+q.ja.slice(q.hi[1])):'';
+      wrong='<div style="margin-top:8px;padding:8px 10px;background:#fff;border-radius:6px;border-left:3px solid #EF4444;">';
+      if(fix) wrong+='<div style="font-size:0.88rem;font-weight:700;color:#16a34a;margin-bottom:3px;">正しくは: '+fix+'</div>';
+      wrong+='<div style="font-size:0.78rem;color:#555;line-height:1.6;">'+q.exp+'</div></div>';
+    }
+    rows+='<div style="margin-bottom:10px;padding:12px 14px;background:'+bg+';border:1.5px solid '+bc+';border-radius:10px;">';
+    rows+='<div style="display:flex;align-items:flex-start;gap:10px;">';
+    rows+='<div style="font-size:1.1rem;font-weight:900;color:'+mc+';min-width:22px;">'+mark+'</div>';
+    rows+='<div style="flex:1;">';
+    rows+='<div style="font-size:0.68rem;color:#999;margin-bottom:2px;">Q'+(i+1)+(q.ok?' [正しい文]':' [誤りを含む文]')+'</div>';
+    rows+='<div style="font-family:Noto Sans JP,sans-serif;font-size:1.05rem;font-weight:500;margin-bottom:2px;">'+sent+'</div>';
+    rows+='<div style="font-size:0.75rem;color:#666;margin-bottom:1px;">'+q.roma+'</div>';
+    rows+='<div style="font-size:0.75rem;color:#999;font-style:italic;">'+q.en+'</div>';
+    rows+=wrong;
+    rows+='</div></div></div>';
+  }
+
+  // Build final HTML
+  var out='';
+  out+='<div style="text-align:center;padding:20px 0 16px;border-bottom:2px solid #2B7FBF;margin-bottom:20px;">';
+  out+='<div style="font-size:1.6rem;font-weight:900;color:#2B7FBF;letter-spacing:1px;">助詞クイズ 復習レポート</div>';
+  out+='<div style="font-size:0.8rem;color:#999;margin-top:4px;">Japanese Particle Quiz — Review Report</div>';
+  out+='</div>';
+  out+=summary;
+  out+=reviewBox;
+  out+='<div style="font-size:0.72rem;font-weight:700;letter-spacing:0.06em;color:#aaa;margin-bottom:10px;">全問題 / All Questions</div>';
+  out+=rows;
+
+  el("pdf-content").innerHTML=out;
+  el("pdf-modal").classList.add("open");
+  el("pdf-modal").scrollTop=0;
+}
+function closePdfModal(){
+  el("pdf-modal").classList.remove("open");
+}
+
+function confetti(big){
+  var w=el("confetti-wrap");w.innerHTML="";
+  var colors=["#FF6B6B","#FFD93D","#4ECDC4","#A855F7","#2B7FBF","#FF8E53"];
+  var n=big?80:25;
+  for(var i=0;i<n;i++){
+    (function(i){setTimeout(function(){
+      var d=document.createElement("div");d.className="confetto";
+      d.style.left=Math.random()*100+"vw";
+      d.style.background=colors[Math.floor(Math.random()*colors.length)];
+      d.style.width=(6+Math.random()*8)+"px";d.style.height=(6+Math.random()*8)+"px";
+      d.style.animationDuration=(1.5+Math.random()*2)+"s";
+      w.appendChild(d);
+      setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d);},4000);
+    },i*30);})(i);
+  }
+}
+
+function playSound(ok){
+  try{
+    var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    if(ok){
+      [523,659,784].forEach(function(f,i){
+        var o=ctx.createOscillator(),g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);
+        o.frequency.value=f;o.type="sine";
+        var t=ctx.currentTime+i*0.12;
+        g.gain.setValueAtTime(0.2,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+        o.start(t);o.stop(t+0.3);
+      });
+    }else{
+      var o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.frequency.setValueAtTime(280,ctx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(140,ctx.currentTime+0.3);
+      o.type="sawtooth";
+      g.gain.setValueAtTime(0.12,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+      o.start(ctx.currentTime);o.stop(ctx.currentTime+0.3);
+    }
+  }catch(e){}
+}
+
+document.addEventListener("DOMContentLoaded",init);
+})();
+</script>
+</body>
+</html>
